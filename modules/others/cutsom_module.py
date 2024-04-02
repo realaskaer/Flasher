@@ -111,7 +111,7 @@ class Custom(Logger, Aggregator):
     @helper
     async def buy_cyberv(self, public_mode:bool = False):
         mint_addresses = '0x67CE4afa08eBf2D6d1f31737cc5D54Ff116205e9'
-        sale_price = 127000000000000000
+        sale_price = int(127000000000000000 * CYBERV_NFT_COUNT)
 
         url = f'https://api-nft.gmnetwork.ai/nft/whitelist/?collection_name=CyberV&address={self.client.address}'
 
