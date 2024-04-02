@@ -1,6 +1,6 @@
 from config import AETHIR_ABI, CYBERV_ABI
 from modules import Logger, Aggregator
-from settings import MEMCOIN_AMOUNT, NODE_ID
+from settings import MEMCOIN_AMOUNT, NODE_ID, CYBERV_NFT_COUNT
 from utils.tools import helper
 
 
@@ -116,8 +116,8 @@ class Custom(Logger, Aggregator):
         mint_contract = self.client.get_contract(mint_addresses, CYBERV_ABI)
 
         transaction = await mint_contract.functions.mint(
-            2,
-            ''
+            CYBERV_NFT_COUNT,
+            '0x'
         ).build_transaction(await self.client.prepare_transaction(value=sale_price))
 
         return await self.client.send_transaction(transaction)

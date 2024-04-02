@@ -20,7 +20,7 @@ from settings import (
     RHINO_CHAIN_ID_TO,
     RHINO_DEPOSIT_AMOUNT,
     ACROSS_CHAIN_ID_TO,
-    ACROSS_DEPOSIT_AMOUNT,
+    ACROSS_DEPOSIT_AMOUNT, GAS_PRICE_MULTIPLIER,
 )
 
 
@@ -195,10 +195,10 @@ class Client(Logger):
                 max_fee_per_gas = base_fee + max_priority_fee_per_gas
 
                 tx_params['maxPriorityFeePerGas'] = max_priority_fee_per_gas
-                tx_params['maxFeePerGas'] = max_fee_per_gas
+                tx_params['maxFeePerGas'] = int(max_fee_per_gas * GAS_PRICE_MULTIPLIER)
                 tx_params['type'] = '0x2'
             else:
-                tx_params['gasPrice'] = await self.w3.eth.gas_price
+                tx_params['gasPrice'] = int(await self.w3.eth.gas_price * GAS_PRICE_MULTIPLIER)
 
             return tx_params
         except TimeoutError or ValueError as error:
