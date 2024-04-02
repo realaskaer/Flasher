@@ -91,7 +91,7 @@ ACROSS_DEPOSIT_AMOUNT = (0.002, 0.002)    # (минимум, максимум) E
 """
 GLOBAL_NETWORK = 13
 ACCOUNTS_IN_STREAM = 1
-WALLETS_TO_WORK = 1            # 0 / 3 / 3, 20 / [3, 20]
+WALLETS_TO_WORK = 0            # 0 / 3 / 3, 20 / [3, 20]
 NUMBER_OF_STREAM = 1
 
 '-------------------------------------------------GAS CONTROL----------------------------------------------------------'
