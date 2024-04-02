@@ -4,6 +4,8 @@ import os
 import random
 import asyncio
 import functools
+import traceback
+
 import msoffcrypto
 import pandas as pd
 
@@ -175,6 +177,7 @@ def helper(func):
                 try:
                      return await func(self, *args, **kwargs)
                 except Exception as error:
+                    traceback.print_exc()
                     self.logger_msg(
                         self.client.account_name,
                         None, msg=f"{error} | Try[{attempts + 1}/{MAXIMUM_RETRY + 1}]", type_msg='error')
@@ -197,40 +200,40 @@ async def prepare_wallets():
     from starknet_py.net.signer.stark_curve_signer import KeyPair
     from starknet_py.net.account.account import Account
     from starknet_py.net.client_errors import ClientError
-    from modules.stark_client import StarknetClient
-    from utils.networks import StarknetRPC
-
-    clean_stark_file()
-
-    async def prepare_wallet(account_name, private_key):
-
-        if await StarknetClient.check_stark_data_file(account_name):
-            return
-
-        try:
-            key_pair = KeyPair.from_private_key(private_key)
-            w3 = FullNodeClient(node_url=random.choice(StarknetRPC.rpc))
-
-            possible_addresses = [(StarknetClient.get_argent_address(key_pair, 1), 0, 1),
-                                  (StarknetClient.get_braavos_address(key_pair), 1, 0),
-                                  (StarknetClient.get_argent_address(key_pair, 0), 0, 0)]
-
-            for address, wallet_type, cairo_version in possible_addresses:
-                account = Account(client=w3, address=address, key_pair=key_pair, chain=StarknetChainId.MAINNET)
-                try:
-                    result = await account.client.get_class_hash_at(address)
-
-                    if result:
-                        await StarknetClient.save_stark_data_file(account_name, address, wallet_type, cairo_version)
-                except ClientError:
-                    pass
-        except Exception as error:
-            raise RuntimeError(f'Wallet is not deployed! Error: {error}')
-
-    tasks = []
-    for account_name, private_key in zip(ACCOUNT_NAMES, PRIVATE_KEYS):
-        tasks.append(asyncio.create_task(prepare_wallet(account_name, private_key)))
-    await asyncio.gather(*tasks)
+    # from modules.stark_client import StarknetClient
+    # from utils.networks import StarknetRPC
+    #
+    # clean_stark_file()
+    #
+    # async def prepare_wallet(account_name, private_key):
+    #
+    #     if await StarknetClient.check_stark_data_file(account_name):
+    #         return
+    #
+    #     try:
+    #         key_pair = KeyPair.from_private_key(private_key)
+    #         w3 = FullNodeClient(node_url=random.choice(StarknetRPC.rpc))
+    #
+    #         possible_addresses = [(StarknetClient.get_argent_address(key_pair, 1), 0, 1),
+    #                               (StarknetClient.get_braavos_address(key_pair), 1, 0),
+    #                               (StarknetClient.get_argent_address(key_pair, 0), 0, 0)]
+    #
+    #         for address, wallet_type, cairo_version in possible_addresses:
+    #             account = Account(client=w3, address=address, key_pair=key_pair, chain=StarknetChainId.MAINNET)
+    #             try:
+    #                 result = await account.client.get_class_hash_at(address)
+    #
+    #                 if result:
+    #                     await StarknetClient.save_stark_data_file(account_name, address, wallet_type, cairo_version)
+    #             except ClientError:
+    #                 pass
+    #     except Exception as error:
+    #         raise RuntimeError(f'Wallet is not deployed! Error: {error}')
+    #
+    # tasks = []
+    # for account_name, private_key in zip(ACCOUNT_NAMES, PRIVATE_KEYS):
+    #     tasks.append(asyncio.create_task(prepare_wallet(account_name, private_key)))
+    # await asyncio.gather(*tasks)
 
 
 async def get_eth_price():

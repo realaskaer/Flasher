@@ -142,8 +142,7 @@ LAYERSWAP_API_KEY = ""
                         0 - получаем 1% токенов от суплая и отдаем необходимое количество ETH за 1% токенов
 """
 
-CYBERV_NFT_COUNT = 1
-
+CYBERV_NFT_COUNT = 2
 
 NODE_ID = 1
 
