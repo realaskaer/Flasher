@@ -168,7 +168,7 @@ class Runner(Logger):
                         account_name, private_key, get_network_by_chain_id(GLOBAL_NETWORK),
                         self.get_proxy_for_account(account_name), index=index)))
 
-            await asyncio.gather(*tasks)
+            await asyncio.gather(*tasks, return_exceptions=True)
 
             self.logger_msg(None, None, f"Wallets in stream completed their tasks, launching next stream\n", 'success')
 
