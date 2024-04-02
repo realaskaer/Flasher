@@ -122,7 +122,9 @@ class Custom(Logger, Aggregator):
             if response['result']['signature'] != '' or public_mode:
                 signature = self.client.w3.to_bytes(hexstr=response['result']['signature'])
 
-                self.logger_msg(*self.client.acc_info, msg=f'Mint CyberV NFT, signature: {signature}')
+                self.logger_msg(
+                    *self.client.acc_info, msg=f'Mint CyberV NFT, signature: {self.client.w3.to_hex(signature)[:10]}...'
+                )
 
                 signature = self.client.w3.to_bytes(hexstr=response['result']['signature'])
                 mint_contract = self.client.get_contract(mint_addresses, CYBERV_ABI)

@@ -88,7 +88,6 @@ class Aggregator(ABC):
                                                params=params, json=json) as response:
             try:
                 data = await response.json()
-                print(data)
                 if response.status == 200:
                     return data
                 raise RuntimeError(f"Bad request to {self.__class__.__name__} API: {response.status}")
