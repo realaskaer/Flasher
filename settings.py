@@ -144,6 +144,7 @@ LAYERSWAP_API_KEY = ""
 
 CYBERV_NFT_COUNT = 1
 
+
 NODE_ID = 1
 
 NEW_WALLET_TYPE = 0
@@ -152,6 +153,13 @@ ZKFAIR_TX_COUNT = 2
 ZKFAIR_GAS_PRICE = 21000
 ZKFAIR_GAS_LIMIT = 25000
 ZKFAIR_CLAIM_REFUND_PHASES = [1, 2, 3, 4]
+
+MEMCOIN_DAPP_CODE = 1  # JediSwap - 1, MySwap - 2, 10kSwap - 3, SithSwap - 4
+MEMCOIN_MODE_CODE = 1
+MEMCOIN_DECIMALS = 18  # эту информацию уточняйте на адресе контракта
+MEMCOIN_SUPPLY = 1000000000000000  # эту информацию уточняйте на адресе контракта
+MEMCOIN_AMOUNT_BATCH = 0.01  # сумма в ETH для MEMCOIN_MODE_CODE = 0
+MEMCOIN_AMOUNT = 0.004  # сумма в ETH для MEMCOIN_MODE_CODE = 1
 
 MEMCOIN_MINT_ADDRESS = [
     0x123,
@@ -181,8 +189,13 @@ MEMCOIN_MINT_ADDRESS = [
     sell_memcoin_thruster        # делает Swap щитка (свапает весь баланс щитка) на ETH через Thruster
     
     buy_cyberv                   # покупает CyberV NFT на сайте https://launchpad.gmnetwork.ai/CyberV
-
+    
     stress_test
+    check_pool_jediswap
+    mint_token_avnu
+    mint_token_jediswap           # делает Swap ETH на щиток через JediSwap
+    mint_token_jediswap_batch     # делает Swap ETH на щиток через JediSwap (1 транзакция на все кошельки)
+    sell_shitcoin_jediswap        # делает Swap щитка (свапает весь баланс щитка) на ETH через JediSwap
     
 ---------------------------------------------------STARKNET-------------------------------------------------------------        
 
@@ -198,8 +211,8 @@ MEMCOIN_MINT_ADDRESS = [
     Список модулей сверху.
     
     CLASSIC_ROUTES_MODULES_USING = [
-        ['buy_memcoin_thruster'],
-        ['sell_memcoin_thruster'],
+        ['mint_token_jediswap'],
+        ['sell_shitcoin'],
         ...
     ]
 """
