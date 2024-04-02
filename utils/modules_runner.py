@@ -129,7 +129,6 @@ class Runner(Logger):
                 try:
                     result = await module_func(*module_input_data)
                 except Exception as error:
-                    raise error
                     info = f"Module name: {module_info[module_func][2]} | Error {error}"
                     self.logger_msg(
                         account_name, None, f"Module crashed during the route: {info}", type_msg='error')
@@ -146,7 +145,6 @@ class Runner(Logger):
             self.logger_msg(account_name, None, f"Wait for other wallets in stream!\n", 'info')
 
         except Exception as error:
-            raise error
             self.logger_msg(account_name, None, f"Error during the route! Error: {error}\n", 'error')
 
     async def run_parallel(self):
@@ -170,7 +168,7 @@ class Runner(Logger):
                         account_name, private_key, get_network_by_chain_id(GLOBAL_NETWORK),
                         self.get_proxy_for_account(account_name), index=index)))
 
-            await asyncio.gather(*tasks, return_exceptions=True)
+            await asyncio.gather(*tasks)
 
             self.logger_msg(None, None, f"Wallets in stream completed their tasks, launching next stream\n", 'success')
 
