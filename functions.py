@@ -1,17 +1,11 @@
-import random
-
 from modules import *
 from utils.networks import *
 from config import OKX_WRAPED_ID
-from settings import (ORBITER_CHAIN_ID_FROM, LAYERSWAP_CHAIN_ID_FROM, RHINO_CHAIN_ID_FROM, ACROSS_CHAIN_ID_FROM,
-                      OKX_DEPOSIT_NETWORK, GLOBAL_NETWORK)
+from settings import (OKX_DEPOSIT_NETWORK)
 
 
-def get_client(account_number, private_key, network, proxy,
-               bridge_from_evm:bool = False, rpc=None) -> Client | StarknetClient:
-    if GLOBAL_NETWORK != 9 or bridge_from_evm:
-        return Client(account_number, private_key, network, proxy)
-    return StarknetClient(account_number, private_key, network, proxy, rpc)
+def get_client(account_number, private_key, network, proxy) -> Client:
+    return Client(account_number, private_key, network, proxy)
 
 
 def get_network_by_chain_id(chain_id):
@@ -76,51 +70,6 @@ def get_key_by_id_from(args, chain_from_id):
 async def swap_rango(account_number, private_key, network, proxy, **kwargs):
     worker = Rango(get_client(account_number, private_key, network, proxy))
     return await worker.swap(**kwargs)
-
-
-async def bridge_layerswap(account_number, _, __, proxy, *args, **kwargs):
-    chain_from_id = random.choice(LAYERSWAP_CHAIN_ID_FROM)
-    network = get_network_by_chain_id(chain_from_id)
-
-    bridge_from_evm = True if 9 not in LAYERSWAP_CHAIN_ID_FROM else False
-    private_key = get_key_by_id_from(args, chain_from_id)
-
-    worker = LayerSwap(get_client(account_number, private_key, network, proxy, bridge_from_evm))
-    return await worker.bridge(chain_from_id, *args, **kwargs)
-
-
-async def bridge_orbiter(account_number, _, __, proxy, *args, **kwargs):
-    chain_from_id = random.choice(ORBITER_CHAIN_ID_FROM)
-    network = get_network_by_chain_id(chain_from_id)
-
-    bridge_from_evm = True if 9 not in ORBITER_CHAIN_ID_FROM else False
-    private_key = get_key_by_id_from(args, chain_from_id)
-
-    worker = Orbiter(get_client(account_number, private_key, network, proxy, bridge_from_evm))
-    return await worker.bridge(chain_from_id, *args, **kwargs)
-
-
-async def bridge_rhino(account_number, _, __, proxy, *args, **kwargs):
-    chain_from_id = random.choice(RHINO_CHAIN_ID_FROM)
-    network = get_network_by_chain_id(chain_from_id)
-
-    bridge_from_evm = True if 9 not in RHINO_CHAIN_ID_FROM else False
-    private_key = get_key_by_id_from(args, chain_from_id)
-
-    worker = Rhino(get_client(account_number, private_key, network, proxy, bridge_from_evm))
-    return await worker.bridge(chain_from_id, *args, **kwargs)
-
-
-async def bridge_across(account_number, _, __, proxy, *args, **kwargs):
-    chain_from_id = random.choice(ACROSS_CHAIN_ID_FROM)
-    network = get_network_by_chain_id(chain_from_id)
-
-    bridge_from_evm = True if 9 not in ACROSS_CHAIN_ID_FROM else False
-    private_key = get_key_by_id_from(args, chain_from_id)
-
-    worker = Across(get_client(account_number, private_key, network, proxy, bridge_from_evm))
-    return await worker.bridge(chain_from_id, *args, **kwargs)
-
 
 async def okx_withdraw(account_number, private_key, network, proxy, *args, **kwargs):
     worker = OKX(get_client(account_number, private_key, network, proxy))

@@ -1,4 +1,5 @@
 import json
+import random
 
 from utils.tools import clean_progress_file
 from functions import *
@@ -11,10 +12,6 @@ from settings import CLASSIC_ROUTES_MODULES_USING
 AVAILABLE_MODULES_INFO = {
     # module_name                       : (module name, priority, tg info, can be help module, supported network)
     okx_withdraw                        : (okx_withdraw, -3, 'OKX Withdraw', 0, [2, 3, 4, 8, 9, 11, 12]),
-    bridge_rhino                        : (bridge_rhino, 1, 'Rhino Bridge', 0, [2, 3, 4, 8, 9, 11, 12]),
-    bridge_layerswap                    : (bridge_layerswap, 1, 'LayerSwap Bridge', 0, [2, 3, 4, 8, 9, 11, 12]),
-    bridge_orbiter                      : (bridge_orbiter, 1, 'Orbiter Bridge', 0, [2, 3, 4, 8, 9, 11, 12]),
-    bridge_across                       : (bridge_across, 1, 'Across Bridge', 0, [2, 3, 11, 12]),
     check_pool_jediswap                 : (check_pool_jediswap, 2, 'Check MemCoin Pool on JediSwap', 0, [9]),
     # mint_token_jediswap                 : (mint_token_jediswap, 3, 'Looooot a new one shit coin =)', 0, [0]),
     # mint_token_jediswap_batch           : (mint_token_jediswap_batch, 3, 'Looooot a new one shit coin =)', 0, [0]),
