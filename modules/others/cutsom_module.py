@@ -1,3 +1,5 @@
+import asyncio
+
 from config import AETHIR_ABI, CYBERV_ABI
 from modules import Logger, Aggregator
 from settings import MEMCOIN_AMOUNT, NODE_ID, CYBERV_NFT_COUNT
@@ -37,76 +39,172 @@ class Custom(Logger, Aggregator):
 
     @helper
     async def buy_node(self):
-        node_addresses = {
-            1: "0xc2BF4eBEbBd692176d08faC51ba7ec3410Af18EC",
-            2: "0xD19EBA0953e995806e76f5505cD6D8A820909C94",
-            3: "0xF85468AaDD71d2dbC969b4A8Cc2147c1DdD4866d",
-            4: "0x754C9D60d5E877bd24c47FaE05eb670875D47442",
-            5: "0x2EbdcEDE80039bb745C3ee2a18C740346dd6560e",
-            6: "0x213404cAB4e3FF587614daBF7bfB23FEb0354227",
-            7: "0xB503f244C02B9472FE0e49d558Df3A3274E1C38c",
-            8: "0x13e8c714F43C806933E0600880600002186BB924",
-            9: "0x2f2735573c137a57F8cE472D55039beb564Fa489",
-            10: "0x20F0E6560d3B2A3DCd3f6dCbF1182e9bB39C49D5",
-            11: "0x1464F7317D6ed9A593aEc6817603032e00a66Ec9",
-            12: "0x5734c72a2A7EBbC81b0f68D2B70337E641E101e4",
-            13: "0x6e27373dA1ECB48361135c1606F48Ab9D0BA6d0e",
-            14: "0x8464e90Ecb3E004548A3aC1f7923AF2ddd0bb74C",
-            15: "0xCC72630C2193C1b3c30ceAD19Ec52F503a09ef61",
-            16: "0x7127B5397f5E565BFCA3902Bc90A1B98bc774F7F",
-            17: "0xC8F323ca581868b85f663F8151fBbF3eaa28D8F8",
-            18: "0xABb16F825190aB86c8f1FE8d1B92fb533972aead",
-            19: "0xd3d5cbd93C8bEf660c606F34FeA0dB8a61f23304",
-            20: "0x07d995a0Da7aeB996468B42D2ed1746b8c534F19",
-            21: "0xA52A44207083bDB3E120f17E38a34d66DD0c621A",
-            22: "0xAF255dCB88a09B6DE7239A7Af02e8a5351eF47C2",
-            23: "0x45526eB2D1dD87d4ED06F867132B0B34e4570619",
-            24: "0x2967C63d7BabEf1111DD2B69C7E9c7eEee4B7603",
-            25: "0x3Aac8b9e37DF1369b6d57A22360115FF40F657bd",
-            26: "0x5b9a4f7e47Be8187e3a7cA34ADeE117980a08d6C",
-            27: "0x7c3C3994A41FCf91460603bc8d347F94C1A69e08",
-            28: "0x229A2aAA2BA844912dDa0EAd878a505cF91B99b8",
-            29: "0xCC149f4154e42c5f9C5aA91d4b05613ebe22E962",
-            30: "0x14b86CeC8e4C9924DF50F61Ba69432acFe631f83",
-            31: "0x6Dd87393fe2A46B961DB5B04A33b749B6E74b77D",
-            32: "0x5caB24d6be7c38451dB88e2Ee3A1F8DC05c4f369",
-            33: "0x05eE164193b73A8f120A05854534e9337E7a8FfC",
-            34: "0xfFF8b61AAE444BDC0573F6d5Be49A3A3E3985925",
-            35: "0xB257Ed0Aa1ceAC4Cb2e206Fa417a5B1d1AE8bBB7",
-            36: "0x176596142e9e4C1dAeEa21Bfb3648F6Fd40Ec6d4",
-            37: "0x563A67fe35CA51d52C26A5859ac3221502D80a70",
-            38: "0x8dCa0d5e28b412C602bdd8F4CDC24090f82A00e1",
-            39: "0x33b7f001630260AfB071dbB77f98041452703bBd",
-            40: "0xbcbBfBB1E1Bf1B905cBc9ba3F0F3ceAe2a5d25eF",
-            41: "0xEF5570f2F01D9cA4A588D283998D56537F8269cC",
-            42: "0x1E64551759a5D67c017182F0c338e378BD378419",
-            43: "0xd05A967b0932248304889fAfFc35982C26C39999",
-            44: "0x0832E9b219d81DcE30cBB3fD5bF676546b042166",
-            45: "0x21d4ce496934d07e98A5E931C6a2e028d3468508",
-            46: "0xad00F8853705205dDaE5763BC5f8324E5598F017",
-            47: "0xe9F5c88009Dc81BDe0a0446E6736434d249597cE",
-            48: "0x8FEf23dD02C16D5A2250Ace4e64411F0574288A9",
-            49: "0x13D34F008974f66500C09fa52AD5a6E62242Fd60",
-            50: "0xF5719b95E0e00383C5AA7035556EA3cFb042EC59",
-            51: "0xb5104e2a0BA6B93Be531D0Eabba85153894B2966",
-            52: "0xa82d10419b1cdA94a41e6389D7e5a8288981a5aa",
-            53: "0x1B30B26c50d3926F0b69b8beaAf3B81d077EC9e7",
-        }[NODE_ID]
+        nodes_data = {
+            "0xc9110F53C042a61d1b0f95342e61d62714F8A2E6": 0.0813,
+            "0x11B2669a07A0D17555a7Ab54C0C37f5c8655A739": 0.0915,
+            "0x58078e429a99478304a25B2Ab03ABE79199bE618": 0.103,
+            "0x2E89CAE8F6532687b015F4BA320F57c77920B451": 0.1158,
+            "0x396Ea0670e3112BC344791Ee7931a5A55E0bDBd1": 0.1303,
+            "0xB08772AA562ED5d06B34fb211c51EC92debF7b26": 0.1466,
+            "0x772eDA6C5aACC61771F9b5f9423D381D311a7018": 0.1649,
+            "0x4842547944832Fe833af677BFDB157dEf391e685": 0.1855,
+            "0x3F0d099120Bf804606835DEFa6dA1A5E784328D6": 0.2087,
+            "0xe0D06d430b0a44e6444f5f0736dC113afe5b636A": 0.2348,
+            "0xE501ADF8425E1Dd5099fA607dCc2B4c91C47B986": 0.2524,
+            "0x2FB5D834D274b9442DA957E98319C35938219a9E": 0.2713,
+            "0xa1109b5550bec4a1118bD232BacCd07dc914CF04": 0.2917,
+            "0x2e64E45faBF1f432d2B59ABd474Da738042B9393": 0.3136,
+            "0x11fBF3713B44AE6D8DBCA1920A40c82AdC685eb4": 0.3371,
+            "0xC7acfcAD2e3008713ee6E3FAF182Aa3a35ae233b": 0.3371,
+            "0x12f8cDEfd7146a089609Be76dCeb8cCeda45eC84": 0.3624,
+            "0x17889bAfcd74E49c219b7449BE60290CF44a314A": 0.3624,
+            "0x7497B778f8ACfe135D7710B223F72B82ECca8F20": 0.3895,
+            "0x069CEA5EfA367F8827Bb71aE2eDF4C5D7907BC79": 0.3895,
+            "0x47F97110768e06984855410Fb51698F2CaB04569": 0.4188,
+            "0xfE1AEb6f8ceFaF3cc6b331975B25C30a86b111ea": 0.4502,
+            "0xb23f5E5A712D3EB8F28433A753666eC6A59238b9": 0.4502,
+            "0xeF51418BcF608470cB02C3701E22d8885DBbFF5A": 0.4839,
+            "0x5a9D1119d3dDf17112f008AE4f200A0d4d1E12F1": 0.4839,
+            "0x2C8e588EC69B15731970470c8C0Eb864D9Ffb414": 0.5202,
+            "0x857558578A8Dd302D56a1111835e7bAa245EA38e": 0.5592,
+            "0x2BDd83B8B189013173C59a15cd9a2fb4Fba9db40": 0.6012,
+            "0x569C7B5f46f33d7EABcf6347Db6e3338f924AF34": 0.6463,
+            "0x37AA2dD6aA1c611958879a072C78Db8C8150eb84": 0.6947,
+            "0x648afe9Dd30515329865ddF5277ae64EaE0576E4": 0.7468,
+            "0xa2751F76b031189007a573cEa8FdA0d9ddbEf894": 0.8029,
+            "0xb09fFbf62450608Ba304befDA6C8FA1eCF77F3f3": 0.8631,
+            "0xC94e199600f09CDcBEEe0AeeB0bBf55E31585149": 0.9278,
+            "0x7ec4D460a3E97fed71081ECAcd5591d1d3A1884C": 0.9974,
+            "0x96Da89f233a53b97976F73D7C519C44fefD08CD5": 1.0722,
+            "0x8CC671cEabb069a2F232CB6ECd4fFC7cd23E9c76": 1.1526,
+            "0xc501E4aa8fA91a8cdc696F513B05883f5347C69d": 1.2391,
+            "0xc1e161E12C537661E047d0BFA187EbfF5988A873": 1.332,
+            "0x5Edf657342e5fD199Ff64Ff10C232F5D5f931d83": 1.4319,
+            "0x08Acfe563babE2Afb28E434723bB20121FD65E0c": 1.5393,
+            "0x28aA5d6BE4A4861Bf8a49ae46ab8Ce31A89A03De": 1.5393,
+            "0xF5f80976ca38881ECe87b9c83Eb9273bd87AA688": 1.6547,
+            "0xced90a97B34a04dc49b0b4d58336c8c74F1971a3": 1.7788,
+            "0x9F2D06b84c2Ac36989286506D4431b48c970Dc92": 1.9122,
+            "0x518eCD09723EF4a71952aCD9281234294dE1488a": 1.9122,
+            "0x75d4E9988ed1a06FBB4b1A4D13217Fb87C82cB08": 2.0556,
+        }
 
-        node_contract = self.client.get_contract(node_addresses, AETHIR_ABI)
+        # {
+        #     "inputs": [
+        #
+        #     ],
+        #     "name": "saleAmount",
+        #     "outputs": [
+        #         {
+        #             "internalType": "uint256",
+        #             "name": "",
+        #             "type": "uint256"
+        #         }
+        #     ],
+        #     "stateMutability": "view",
+        #     "type": "function"
+        # },
+        # {
+        #     "inputs": [
+        #
+        #     ],
+        #     "name": "salePrice",
+        #     "outputs": [
+        #         {
+        #             "internalType": "uint256",
+        #             "name": "",
+        #             "type": "uint256"
+        #         }
+        #     ],
+        #     "stateMutability": "view",
+        #     "type": "function"
+        # },
+        # {
+        #     "inputs": [
+        #
+        #     ],
+        #     "name": "startTime",
+        #     "outputs": [
+        #         {
+        #             "internalType": "uint256",
+        #             "name": "",
+        #             "type": "uint256"
+        #         }
+        #     ],
+        #     "stateMutability": "view",
+        #     "type": "function"
+        # },
+        import datetime
 
-        await self.client.check_for_approved()
+        # Предположим, что у вас есть timestamp
+        # Преобразование timestamp в объект datetime
 
-        sale_price = await node_contract.functions.salePrice().call()
+        for contract_address, price in nodes_data.items():
 
-        transaction = await node_contract.functions.a(
-            sale_price,
-            [],
-            sale_price,
-            'defigen'
-        ).build_transaction(await self.client.prepare_transaction(value=sale_price))
+            node_contract = self.client.get_contract(contract_address, AETHIR_ABI)
 
-        return await self.client.send_transaction(transaction)
+            total_price = int(price * 2)
+            total_count = int(2)
+
+            #await self.client.check_for_approved()
+
+            start_time = await node_contract.functions.startTime().call()
+            date_time = datetime.datetime.fromtimestamp(start_time)
+            bytes_data = '0x'
+            # Преобразование объекта datetime в строку с помощью метода strftime()
+            try:
+                transaction = await node_contract.functions.whitelistedPurchase(
+                    total_price,
+                    [],
+                    total_count,
+                ).build_transaction(await self.client.prepare_transaction(value=total_price))
+            except Exception as error:
+                try:
+                    self.logger_msg(*self.client.acc_info, msg=f"Method#1. {error}", type_msg='error')
+                    transaction = await node_contract.functions.whitelistedPurchase(
+                        total_price,
+                        []
+                    ).build_transaction(await self.client.prepare_transaction(value=total_price))
+                except Exception as error:
+                    try:
+                        self.logger_msg(*self.client.acc_info, msg=f"Method#2. {error}", type_msg='error')
+                        transaction = await node_contract.functions.whitelistedPurchaseWithCode(
+                            total_price,
+                            [],
+                            total_count,
+                            'defigen',
+                        ).build_transaction(await self.client.prepare_transaction(value=total_price))
+                    except Exception as error:
+                        self.logger_msg(*self.client.acc_info, msg=f"Method#3. {error}", type_msg='error')
+                        raise error
+
+            print(transaction)
+            break
+            return await self.client.send_transaction(transaction)
+
+        # for contract_address, price in nodes_data.items():
+        #
+        #     node_contract = self.client.get_contract(contract_address, AETHIR_ABI)
+        #
+        #     #await self.client.check_for_approved()
+        #
+        #     start_time = await node_contract.functions.totalPaymentReceived().call()
+        #     print(start_time)
+        #     # date_time = datetime.datetime.fromtimestamp(start_time)
+        #     #
+        #     # # Преобразование объекта datetime в строку с помощью метода strftime()
+        #     # formatted_date_time = date_time.strftime('%Y-%m-%d %H:%M:%S')
+        #     # if formatted_date_time.split()[0][-2:] == "30":
+        #     #     print(f"{contract_address}: {price}")
+        #     # continue
+        #     # transaction = await node_contract.functions.a(
+        #     #     sale_price,
+        #     #     [],
+        #     #     sale_price,
+        #     #     'defigen'
+        #     # ).build_transaction(await self.client.prepare_transaction(value=sale_price))
+        #     #
+        #     # return await self.client.send_transaction(transaction)
 
     @helper
     async def buy_cyberv(self, public_mode:bool = False):
