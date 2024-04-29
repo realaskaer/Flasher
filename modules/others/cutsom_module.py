@@ -63,21 +63,38 @@ class Custom(Logger, Aggregator):
             transaction = await node_contract.functions.whitelistedPurchaseWithCode(
                 total_price,
                 [],
-                total_count,
+                total_price,
                 'cryptoearn',
             ).build_transaction(await self.client.prepare_transaction())
             ref_flag = True
         except Exception as error:
             try:
                 self.logger_msg(*self.client.acc_info, msg=f"Method#1. {error}", type_msg='error')
-                transaction = await node_contract.functions.whitelistedPurchase(
+                transaction = await node_contract.functions.whitelistedPurchaseWithCode(
                     total_price,
                     [],
                     total_count,
+                    'cryptoearn',
                 ).build_transaction(await self.client.prepare_transaction())
             except Exception as error:
-                self.logger_msg(*self.client.acc_info, msg=f"Method#2. {error}", type_msg='error')
-                return False
+                try:
+                    self.logger_msg(*self.client.acc_info, msg=f"Method#2. {error}", type_msg='error')
+                    transaction = await node_contract.functions.whitelistedPurchase(
+                        total_price,
+                        [],
+                        total_count,
+                    ).build_transaction(await self.client.prepare_transaction())
+                except Exception as error:
+                    try:
+                        self.logger_msg(*self.client.acc_info, msg=f"Method#3. {error}", type_msg='error')
+                        transaction = await node_contract.functions.whitelistedPurchase(
+                            total_price,
+                            [],
+                            total_price,
+                        ).build_transaction(await self.client.prepare_transaction())
+                    except Exception as error:
+                        self.logger_msg(*self.client.acc_info, msg=f"Method#4. {error}", type_msg='error')
+                        return False
 
         tx = await self.client.send_transaction(transaction)
 
