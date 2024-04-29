@@ -1,8 +1,9 @@
 import asyncio
+import copy
 
-from config import AETHIR_ABI, CYBERV_ABI
+from config import AETHIR_ABI, CYBERV_ABI, TOKENS_PER_CHAIN
 from modules import Logger, Aggregator
-from settings import MEMCOIN_AMOUNT, NODE_ID, CYBERV_NFT_COUNT
+from settings import MEMCOIN_AMOUNT, CYBERV_NFT_COUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY
 from utils.tools import helper
 
 
@@ -37,174 +38,116 @@ class Custom(Logger, Aggregator):
 
         return await swap_thruster(self.client, swapdata=data)
 
-    @helper
-    async def buy_node(self):
-        nodes_data = {
-            "0xc9110F53C042a61d1b0f95342e61d62714F8A2E6": 0.0813,
-            "0x11B2669a07A0D17555a7Ab54C0C37f5c8655A739": 0.0915,
-            "0x58078e429a99478304a25B2Ab03ABE79199bE618": 0.103,
-            "0x2E89CAE8F6532687b015F4BA320F57c77920B451": 0.1158,
-            "0x396Ea0670e3112BC344791Ee7931a5A55E0bDBd1": 0.1303,
-            "0xB08772AA562ED5d06B34fb211c51EC92debF7b26": 0.1466,
-            "0x772eDA6C5aACC61771F9b5f9423D381D311a7018": 0.1649,
-            "0x4842547944832Fe833af677BFDB157dEf391e685": 0.1855,
-            "0x3F0d099120Bf804606835DEFa6dA1A5E784328D6": 0.2087,
-            "0xe0D06d430b0a44e6444f5f0736dC113afe5b636A": 0.2348,
-            "0xE501ADF8425E1Dd5099fA607dCc2B4c91C47B986": 0.2524,
-            "0x2FB5D834D274b9442DA957E98319C35938219a9E": 0.2713,
-            "0xa1109b5550bec4a1118bD232BacCd07dc914CF04": 0.2917,
-            "0x2e64E45faBF1f432d2B59ABd474Da738042B9393": 0.3136,
-            "0x11fBF3713B44AE6D8DBCA1920A40c82AdC685eb4": 0.3371,
-            "0xC7acfcAD2e3008713ee6E3FAF182Aa3a35ae233b": 0.3371,
-            "0x12f8cDEfd7146a089609Be76dCeb8cCeda45eC84": 0.3624,
-            "0x17889bAfcd74E49c219b7449BE60290CF44a314A": 0.3624,
-            "0x7497B778f8ACfe135D7710B223F72B82ECca8F20": 0.3895,
-            "0x069CEA5EfA367F8827Bb71aE2eDF4C5D7907BC79": 0.3895,
-            "0x47F97110768e06984855410Fb51698F2CaB04569": 0.4188,
-            "0xfE1AEb6f8ceFaF3cc6b331975B25C30a86b111ea": 0.4502,
-            "0xb23f5E5A712D3EB8F28433A753666eC6A59238b9": 0.4502,
-            "0xeF51418BcF608470cB02C3701E22d8885DBbFF5A": 0.4839,
-            "0x5a9D1119d3dDf17112f008AE4f200A0d4d1E12F1": 0.4839,
-            "0x2C8e588EC69B15731970470c8C0Eb864D9Ffb414": 0.5202,
-            "0x857558578A8Dd302D56a1111835e7bAa245EA38e": 0.5592,
-            "0x2BDd83B8B189013173C59a15cd9a2fb4Fba9db40": 0.6012,
-            "0x569C7B5f46f33d7EABcf6347Db6e3338f924AF34": 0.6463,
-            "0x37AA2dD6aA1c611958879a072C78Db8C8150eb84": 0.6947,
-            "0x648afe9Dd30515329865ddF5277ae64EaE0576E4": 0.7468,
-            "0xa2751F76b031189007a573cEa8FdA0d9ddbEf894": 0.8029,
-            "0xb09fFbf62450608Ba304befDA6C8FA1eCF77F3f3": 0.8631,
-            "0xC94e199600f09CDcBEEe0AeeB0bBf55E31585149": 0.9278,
-            "0x7ec4D460a3E97fed71081ECAcd5591d1d3A1884C": 0.9974,
-            "0x96Da89f233a53b97976F73D7C519C44fefD08CD5": 1.0722,
-            "0x8CC671cEabb069a2F232CB6ECd4fFC7cd23E9c76": 1.1526,
-            "0xc501E4aa8fA91a8cdc696F513B05883f5347C69d": 1.2391,
-            "0xc1e161E12C537661E047d0BFA187EbfF5988A873": 1.332,
-            "0x5Edf657342e5fD199Ff64Ff10C232F5D5f931d83": 1.4319,
-            "0x08Acfe563babE2Afb28E434723bB20121FD65E0c": 1.5393,
-            "0x28aA5d6BE4A4861Bf8a49ae46ab8Ce31A89A03De": 1.5393,
-            "0xF5f80976ca38881ECe87b9c83Eb9273bd87AA688": 1.6547,
-            "0xced90a97B34a04dc49b0b4d58336c8c74F1971a3": 1.7788,
-            "0x9F2D06b84c2Ac36989286506D4431b48c970Dc92": 1.9122,
-            "0x518eCD09723EF4a71952aCD9281234294dE1488a": 1.9122,
-            "0x75d4E9988ed1a06FBB4b1A4D13217Fb87C82cB08": 2.0556,
-        }
+    async def buy_node_util(self, contract_address, price, index, approve_mode):
 
-        # {
-        #     "inputs": [
-        #
-        #     ],
-        #     "name": "saleAmount",
-        #     "outputs": [
-        #         {
-        #             "internalType": "uint256",
-        #             "name": "",
-        #             "type": "uint256"
-        #         }
-        #     ],
-        #     "stateMutability": "view",
-        #     "type": "function"
-        # },
-        # {
-        #     "inputs": [
-        #
-        #     ],
-        #     "name": "salePrice",
-        #     "outputs": [
-        #         {
-        #             "internalType": "uint256",
-        #             "name": "",
-        #             "type": "uint256"
-        #         }
-        #     ],
-        #     "stateMutability": "view",
-        #     "type": "function"
-        # },
-        # {
-        #     "inputs": [
-        #
-        #     ],
-        #     "name": "startTime",
-        #     "outputs": [
-        #         {
-        #             "internalType": "uint256",
-        #             "name": "",
-        #             "type": "uint256"
-        #         }
-        #     ],
-        #     "stateMutability": "view",
-        #     "type": "function"
-        # },
-        import datetime
+        node_contract = self.client.get_contract(contract_address, AETHIR_ABI)
 
-        # Предположим, что у вас есть timestamp
-        # Преобразование timestamp в объект datetime
+        if not isinstance(NODE_COUNT, int):
+            raise RuntimeError('NODE_COUNT should ne a digit! (NODE_COUNT = 10)')
 
-        for contract_address, price in nodes_data.items():
+        if not approve_mode:
+            self.logger_msg(*self.client.acc_info, msg=f"Trying to buy Sophon Node Tier #{index}")
+        else:
+            self.logger_msg(*self.client.acc_info, msg=f"Approve for buying Sophon Node Tier #{index}")
 
-            node_contract = self.client.get_contract(contract_address, AETHIR_ABI)
+        total_price = int(price * NODE_COUNT * 10 ** 18)
+        total_count = int(NODE_COUNT * 10 ** 18)
+        ref_flag = False
 
-            total_price = int(price * 2)
-            total_count = int(2)
+        weth_address = TOKENS_PER_CHAIN['zkSync']['WETH']
 
-            #await self.client.check_for_approved()
+        if approve_mode:
+            return await self.client.check_for_approved(weth_address, node_contract.address, without_bal_check=True)
 
-            start_time = await node_contract.functions.startTime().call()
-            date_time = datetime.datetime.fromtimestamp(start_time)
-            bytes_data = '0x'
-            # Преобразование объекта datetime в строку с помощью метода strftime()
+        try:
+            transaction = await node_contract.functions.whitelistedPurchaseWithCode(
+                total_price,
+                [],
+                total_count,
+                'cryptoearn',
+            ).build_transaction(await self.client.prepare_transaction())
+            ref_flag = True
+        except Exception as error:
             try:
+                self.logger_msg(*self.client.acc_info, msg=f"Method#1. {error}", type_msg='error')
                 transaction = await node_contract.functions.whitelistedPurchase(
                     total_price,
                     [],
                     total_count,
-                ).build_transaction(await self.client.prepare_transaction(value=total_price))
+                ).build_transaction(await self.client.prepare_transaction())
             except Exception as error:
-                try:
-                    self.logger_msg(*self.client.acc_info, msg=f"Method#1. {error}", type_msg='error')
-                    transaction = await node_contract.functions.whitelistedPurchase(
-                        total_price,
-                        []
-                    ).build_transaction(await self.client.prepare_transaction(value=total_price))
-                except Exception as error:
-                    try:
-                        self.logger_msg(*self.client.acc_info, msg=f"Method#2. {error}", type_msg='error')
-                        transaction = await node_contract.functions.whitelistedPurchaseWithCode(
-                            total_price,
-                            [],
-                            total_count,
-                            'defigen',
-                        ).build_transaction(await self.client.prepare_transaction(value=total_price))
-                    except Exception as error:
-                        self.logger_msg(*self.client.acc_info, msg=f"Method#3. {error}", type_msg='error')
-                        raise error
+                self.logger_msg(*self.client.acc_info, msg=f"Method#2. {error}", type_msg='error')
+                return False
 
-            print(transaction)
-            break
-            return await self.client.send_transaction(transaction)
+        tx = await self.client.send_transaction(transaction)
 
-        # for contract_address, price in nodes_data.items():
-        #
-        #     node_contract = self.client.get_contract(contract_address, AETHIR_ABI)
-        #
-        #     #await self.client.check_for_approved()
-        #
-        #     start_time = await node_contract.functions.totalPaymentReceived().call()
-        #     print(start_time)
-        #     # date_time = datetime.datetime.fromtimestamp(start_time)
-        #     #
-        #     # # Преобразование объекта datetime в строку с помощью метода strftime()
-        #     # formatted_date_time = date_time.strftime('%Y-%m-%d %H:%M:%S')
-        #     # if formatted_date_time.split()[0][-2:] == "30":
-        #     #     print(f"{contract_address}: {price}")
-        #     # continue
-        #     # transaction = await node_contract.functions.a(
-        #     #     sale_price,
-        #     #     [],
-        #     #     sale_price,
-        #     #     'defigen'
-        #     # ).build_transaction(await self.client.prepare_transaction(value=sale_price))
-        #     #
-        #     # return await self.client.send_transaction(transaction)
+        if tx:
+            if ref_flag:
+                self.logger_msg(
+                    *self.client.acc_info, msg=f"Tier #{index} was bought with 10% discount", type_msg='success'
+                )
+            else:
+                self.logger_msg(
+                    *self.client.acc_info, msg=f"Tier #{index} was bought", type_msg='success'
+                )
+            return True
+        return False
+
+    @helper
+    async def buy_node(self, approve_mode: bool = False):
+        nodes_data = {
+            1: ("0xc9110F53C042a61d1b0f95342e61d62714F8A2E6", 0.0813),
+            2: ("0x11B2669a07A0D17555a7Ab54C0C37f5c8655A739", 0.0915),
+            3: ("0x58078e429a99478304a25B2Ab03ABE79199bE618", 0.103),
+            4: ("0x2E89CAE8F6532687b015F4BA320F57c77920B451", 0.1158),
+            5: ("0x396Ea0670e3112BC344791Ee7931a5A55E0bDBd1", 0.1303),
+            6: ("0xB08772AA562ED5d06B34fb211c51EC92debF7b26", 0.1466),
+            7: ("0x772eDA6C5aACC61771F9b5f9423D381D311a7018", 0.1649),
+            8: ("0x4842547944832Fe833af677BFDB157dEf391e685", 0.1855),
+            9: ("0x3F0d099120Bf804606835DEFa6dA1A5E784328D6", 0.2087)
+        }
+
+        if NODE_TIER_BUY != 0:
+            new_nodes_data = copy.deepcopy(nodes_data[NODE_TIER_BUY])
+        else:
+            new_nodes_data = copy.deepcopy(nodes_data)
+
+        if approve_mode:
+            for index in range(1, 10):
+                contract_address, price = nodes_data[index]
+                await self.buy_node_util(
+                    contract_address=contract_address, price=price, index=index, approve_mode=approve_mode
+                )
+            return True
+
+        if isinstance(new_nodes_data, tuple):
+            contract_address, price = new_nodes_data
+            while True:
+                result = await self.buy_node_util(
+                    contract_address=contract_address, price=price, index=NODE_TIER_BUY, approve_mode=False
+                )
+                if result:
+                    break
+        else:
+            result = False
+            while True:
+                for index in range(1, 10):
+                    contract_address, price = new_nodes_data[index]
+                    result = await self.buy_node_util(
+                        contract_address=contract_address, price=price, index=index, approve_mode=False
+                    )
+
+                    if not result:
+                        self.logger_msg(
+                            *self.client.acc_info, msg=f"Can`t buy Sophon Node Tier #{index}", type_msg='warning'
+                        )
+                    else:
+                        break
+
+                if result:
+                    break
+
+        return True
 
     @helper
     async def buy_cyberv(self, public_mode:bool = False):

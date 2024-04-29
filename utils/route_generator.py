@@ -20,6 +20,7 @@ AVAILABLE_MODULES_INFO = {
     sell_memcoin_thruster               : (sell_memcoin_thruster, 3, 'Sell a new one shit coin =)', 0, [0]),
     buy_cyberv                          : (buy_cyberv, 3, 'Buy CyberV NFT', 0, [0]),
     buy_node                            : (buy_node, 3, 'Buy Sophon Node', 0, [0]),
+    approve_weth_for_buy_node           : (approve_weth_for_buy_node, 3, 'Approve for buying Sophon Node', 0, [0]),
     stress_test                         : (stress_test, 3, 'Stress test', 0, [0]),
     okx_deposit                         : (okx_deposit, 4, 'OKX Deposit', 0, [2, 3, 4, 8, 9, 11, 12]),
     okx_collect_from_sub                : (okx_collect_from_sub, 5, 'OKX Collect money', 0, [2, 3, 4, 8, 9, 11, 12])

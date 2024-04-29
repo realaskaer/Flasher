@@ -52,9 +52,9 @@ zkSyncEraRPC = Network(
         'https://mainnet.era.zksync.io',
     ],
     chain_id=324,
-    eip1559_support=True,
+    eip1559_support=False,
     token='ETH',
-    explorer='https://explorer.zksync.io/',
+    explorer='https://era.zksync.network/',
 )
 
 ScrollRPC = Network(

@@ -175,7 +175,7 @@ def helper(func):
         try:
             while True:
                 try:
-                     return await func(self, *args, **kwargs)
+                    return await func(self, *args, **kwargs)
                 except Exception as error:
                     self.logger_msg(
                         self.client.account_name,
@@ -195,11 +195,6 @@ def helper(func):
 
 async def prepare_wallets():
     from config import ACCOUNT_NAMES, PRIVATE_KEYS
-    from starknet_py.net.full_node_client import FullNodeClient
-    from starknet_py.net.models import StarknetChainId
-    from starknet_py.net.signer.stark_curve_signer import KeyPair
-    from starknet_py.net.account.account import Account
-    from starknet_py.net.client_errors import ClientError
     # from modules.stark_client import StarknetClient
     # from utils.networks import StarknetRPC
     #

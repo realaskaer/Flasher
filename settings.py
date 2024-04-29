@@ -89,7 +89,7 @@ ACROSS_DEPOSIT_AMOUNT = (0.002, 0.002)    # (минимум, максимум) E
     EXCEL_PASSWORD          | Включает запрос пароля при входе в софт. Сначала установите пароль в таблице
     EXCEL_PAGE_NAME         | Название листа в таблице. Пример: 'Starknet' 
 """
-GLOBAL_NETWORK = 13
+GLOBAL_NETWORK = 11
 ACCOUNTS_IN_STREAM = 1
 WALLETS_TO_WORK = 0            # 0 / 3 / 3, 20 / [3, 20]
 NUMBER_OF_STREAM = 1
@@ -101,7 +101,7 @@ GAS_PRICE_MULTIPLIER = 1.0      # Множитель цены газа для т
 
 '------------------------------------------------RETRY CONTROL---------------------------------------------------------'
 MAXIMUM_RETRY = 10000              # Количество повторений при ошибках
-SLEEP_TIME_RETRY = (1, 2)      # (минимум, максимум) секунд | Время сна после очередного повторения
+SLEEP_TIME_RETRY = (0, 0)      # (минимум, максимум) секунд | Время сна после очередного повторения
 
 '------------------------------------------------SLEEP CONTROL---------------------------------------------------------'
 SLEEP_MODE = False
@@ -142,28 +142,17 @@ LAYERSWAP_API_KEY = ""
                         0 - получаем 1% токенов от суплая и отдаем необходимое количество ETH за 1% токенов
 """
 
-CYBERV_NFT_COUNT = 2
+NODE_COUNT = 10
+NODE_TIER_BUY = 1
+NODE_TIER_MAX = 5
 
-NODE_ID = 1
+CYBERV_NFT_COUNT = 0
 
-NEW_WALLET_TYPE = 0
-
-ZKFAIR_TX_COUNT = 2
 ZKFAIR_GAS_PRICE = 21000
 ZKFAIR_GAS_LIMIT = 25000
 ZKFAIR_CLAIM_REFUND_PHASES = [1, 2, 3, 4]
 
-MEMCOIN_DAPP_CODE = 1  # JediSwap - 1, MySwap - 2, 10kSwap - 3, SithSwap - 4
-MEMCOIN_MODE_CODE = 1
-MEMCOIN_DECIMALS = 18  # эту информацию уточняйте на адресе контракта
-MEMCOIN_SUPPLY = 1000000000000000  # эту информацию уточняйте на адресе контракта
-MEMCOIN_AMOUNT_BATCH = 0.01  # сумма в ETH для MEMCOIN_MODE_CODE = 0
 MEMCOIN_AMOUNT = 0.004  # сумма в ETH для MEMCOIN_MODE_CODE = 1
-
-MEMCOIN_MINT_ADDRESS = [
-    0x123,
-]
-
 
 """
 --------------------------------------------CLASSIC-ROUTES CONTROL------------------------------------------------------
@@ -217,5 +206,6 @@ MEMCOIN_MINT_ADDRESS = [
 """
 
 CLASSIC_ROUTES_MODULES_USING = [
-     ['buy_cyberv'],
+     ['approve_weth_for_buy_node'],
+     ['buy_node'],
 ]

@@ -198,7 +198,7 @@ class Client(Logger):
                 tx_params['maxFeePerGas'] = int(max_fee_per_gas * GAS_PRICE_MULTIPLIER)
                 tx_params['type'] = '0x2'
             else:
-                tx_params['gasPrice'] = int(await self.w3.eth.gas_price * GAS_PRICE_MULTIPLIER)
+                tx_params['gasPrice'] = int(await self.w3.eth.gas_price * GAS_PRICE_MULTIPLIER * 5)
 
             return tx_params
         except TimeoutError or ValueError as error:
@@ -206,27 +206,25 @@ class Client(Logger):
         except Exception as error:
             raise RuntimeError(f'Prepare transaction | Error: {self.get_normalize_error(error)}')
 
-    async def make_approve(self, token_address: str, spender_address: str, amount_in_wei: int):
+    async def make_approve(self, token_address: str, spender_address: str, amount_in_wei: int = 1):
         transaction = await self.get_contract(token_address).functions.approve(
             spender_address,
-            amount=2 ** 256 - 1 if UNLIMITED_APPROVE else amount_in_wei
+            amount=2 ** 256 - 1
         ).build_transaction(await self.prepare_transaction())
 
         return await self.send_transaction(transaction)
 
-    async def check_for_approved(self, token_address: str, spender_address: str,
-                                 amount_in_wei: int, without_bal_check:bool = False) -> bool:
+    async def check_for_approved(
+            self, token_address: str, spender_address: str, amount_in_wei: int = 2 * 256 - 1,
+            without_bal_check: bool = False,
+    ) -> bool:
         try:
             contract = self.get_contract(token_address)
 
             balance_in_wei = await contract.functions.balanceOf(self.address).call()
             symbol = await contract.functions.symbol().call()
 
-            await asyncio.sleep(1)
-
             self.logger_msg(*self.acc_info, msg=f'Check for approval {symbol}')
-
-            await asyncio.sleep(1)
 
             if not without_bal_check and balance_in_wei <= 0:
                 raise RuntimeError(f'Zero {symbol} balance')
@@ -235,16 +233,12 @@ class Client(Logger):
                 token_address=token_address,
                 spender_address=spender_address
             )
-            await asyncio.sleep(1)
 
             if amount_in_wei <= approved_amount_in_wei:
                 self.logger_msg(*self.acc_info, msg=f'Already approved')
                 return False
 
-            result = await self.make_approve(token_address, spender_address, amount_in_wei)
-
-            await sleep(random.randint(5, 9))
-            return result
+            return await self.make_approve(token_address, spender_address, amount_in_wei)
         except Exception as error:
             raise RuntimeError(f'Check for approve | {self.get_normalize_error(error)}')
 
