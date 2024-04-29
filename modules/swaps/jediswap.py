@@ -1,7 +1,7 @@
 import time
 
 from modules import DEX, Logger
-from settings import SLIPPAGE, MEMCOIN_MINT_ADDRESS, MEMCOIN_AMOUNT_BATCH, MEMCOIN_SUPPLY
+from settings import SLIPPAGE
 from config import JEDISWAP_CONTRACT, TOKENS_PER_CHAIN
 from utils.tools import helper
 
