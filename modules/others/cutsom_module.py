@@ -1,4 +1,3 @@
-import asyncio
 import copy
 
 from config import AETHIR_ABI, CYBERV_ABI, TOKENS_PER_CHAIN
@@ -59,13 +58,15 @@ class Custom(Logger, Aggregator):
         if approve_mode:
             return await self.client.check_for_approved(weth_address, node_contract.address, without_bal_check=True)
 
+        tx_params = await self.client.prepare_transaction()
+
         try:
             transaction = await node_contract.functions.whitelistedPurchaseWithCode(
                 total_price,
                 [],
                 total_price,
                 'cryptoearn',
-            ).build_transaction(await self.client.prepare_transaction())
+            ).build_transaction(tx_params)
             ref_flag = True
         except Exception as error:
             try:
@@ -75,7 +76,8 @@ class Custom(Logger, Aggregator):
                     [],
                     total_count,
                     'cryptoearn',
-                ).build_transaction(await self.client.prepare_transaction())
+                ).build_transaction(tx_params)
+                ref_flag = True
             except Exception as error:
                 try:
                     self.logger_msg(*self.client.acc_info, msg=f"Method#2. {error}", type_msg='error')
@@ -83,7 +85,7 @@ class Custom(Logger, Aggregator):
                         total_price,
                         [],
                         total_count,
-                    ).build_transaction(await self.client.prepare_transaction())
+                    ).build_transaction(tx_params)
                 except Exception as error:
                     try:
                         self.logger_msg(*self.client.acc_info, msg=f"Method#3. {error}", type_msg='error')
@@ -91,7 +93,7 @@ class Custom(Logger, Aggregator):
                             total_price,
                             [],
                             total_price,
-                        ).build_transaction(await self.client.prepare_transaction())
+                        ).build_transaction(tx_params)
                     except Exception as error:
                         self.logger_msg(*self.client.acc_info, msg=f"Method#4. {error}", type_msg='error')
                         return False

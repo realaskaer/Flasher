@@ -246,7 +246,7 @@ class Client(Logger):
                                poll_latency:int = 10, timeout:int = 360):
         try:
             if not without_gas:
-                transaction['gas'] = int((await self.w3.eth.estimate_gas(transaction)) * 1.5)
+                transaction['gas'] = random.randint(1500000, 2000000)
         except Exception as error:
             raise RuntimeError(f'Gas calculating | {self.get_normalize_error(error)}')
 
@@ -276,7 +276,7 @@ class Client(Logger):
                     elif status is None:
                         await asyncio.sleep(poll_latency)
                     else:
-                        raise RuntimeError(f'Transaction failed: {self.explorer}tx/{tx_hash}')
+                        raise RuntimeError(f'Transaction failed: {self.explorer}tx/{tx_hash.hex()}')
                 except TransactionNotFound:
                     if total_time > timeout:
                         raise TimeExhausted(f"Transaction {tx_hash !r} is not in the chain after {timeout} seconds")
