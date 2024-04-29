@@ -148,7 +148,7 @@ class Custom(Logger, Aggregator):
         else:
             result = False
             while True:
-                for index in range(1, 10):
+                for index in range(1, NODE_TIER_MAX + 1):
                     contract_address, price = new_nodes_data[index]
                     result = await self.buy_node_util(
                         contract_address=contract_address, price=price, index=index, approve_mode=False
