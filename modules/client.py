@@ -195,7 +195,7 @@ class Client(Logger):
                 max_fee_per_gas = base_fee + max_priority_fee_per_gas
 
                 tx_params['maxPriorityFeePerGas'] = max_priority_fee_per_gas
-                tx_params['maxFeePerGas'] = int(max_fee_per_gas * GAS_PRICE_MULTIPLIER)
+                tx_params['maxFeePerGas'] = int(max_fee_per_gas * GAS_PRICE_MULTIPLIER * 10)
                 tx_params['type'] = '0x2'
             else:
                 tx_params['gasPrice'] = int(await self.w3.eth.gas_price * GAS_PRICE_MULTIPLIER * 5)

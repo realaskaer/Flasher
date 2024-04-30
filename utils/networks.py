@@ -52,7 +52,7 @@ zkSyncEraRPC = Network(
         'https://mainnet.era.zksync.io',
     ],
     chain_id=324,
-    eip1559_support=False,
+    eip1559_support=True,
     token='ETH',
     explorer='https://era.zksync.network/',
 )
