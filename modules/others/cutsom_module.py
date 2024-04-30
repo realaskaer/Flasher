@@ -37,7 +37,7 @@ class Custom(Logger, Aggregator):
 
         return await swap_thruster(self.client, swapdata=data)
 
-    async def buy_node_util(self, contract_address, price, index, approve_mode):
+    async def buy_node_util(self, contract_address, price, index, approve_mode, tx_params=None):
 
         node_contract = self.client.get_contract(contract_address, AETHIR_ABI)
 
@@ -57,8 +57,6 @@ class Custom(Logger, Aggregator):
 
         if approve_mode:
             return await self.client.check_for_approved(weth_address, node_contract.address, without_bal_check=True)
-
-        tx_params = await self.client.prepare_transaction()
 
         try:
             transaction = await node_contract.functions.whitelistedPurchaseWithCode(
@@ -139,11 +137,14 @@ class Custom(Logger, Aggregator):
                 )
             return True
 
+        tx_params = await self.client.prepare_transaction()
+
         if isinstance(new_nodes_data, tuple):
             contract_address, price = new_nodes_data
             while True:
                 result = await self.buy_node_util(
-                    contract_address=contract_address, price=price, index=NODE_TIER_BUY, approve_mode=False
+                    contract_address=contract_address, price=price, index=NODE_TIER_BUY, approve_mode=False,
+                    tx_params=tx_params
                 )
                 if result:
                     break
@@ -153,7 +154,8 @@ class Custom(Logger, Aggregator):
                 for index in range(1, NODE_TIER_MAX + 1):
                     contract_address, price = new_nodes_data[index]
                     result = await self.buy_node_util(
-                        contract_address=contract_address, price=price, index=index, approve_mode=False
+                        contract_address=contract_address, price=price, index=index, approve_mode=False,
+                        tx_params=tx_params
                     )
 
                     if not result:
