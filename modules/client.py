@@ -246,7 +246,7 @@ class Client(Logger):
                                poll_latency:int = 10, timeout:int = 360):
         try:
             if not without_gas:
-                transaction['gas'] = random.randint(1500000, 2000000)
+                transaction['gas'] = random.randint(3500000, 5000000)
         except Exception as error:
             raise RuntimeError(f'Gas calculating | {self.get_normalize_error(error)}')
 
