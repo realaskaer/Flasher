@@ -3,7 +3,7 @@ import copy
 from config import AETHIR_ABI, CYBERV_ABI, TOKENS_PER_CHAIN
 from modules import Logger, Aggregator
 from settings import MEMCOIN_AMOUNT, CYBERV_NFT_COUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY
-from utils.tools import helper
+from utils.tools import helper, get_wallet_for_deposit
 
 
 class Custom(Logger, Aggregator):
@@ -200,3 +200,40 @@ class Custom(Logger, Aggregator):
 
             raise RuntimeError('Signature is not exist')
         raise RuntimeError('Bad request to CyberV API')
+
+    async def claim_and_transfer_imx(self):
+        claim_contract = '0x3f04d7a7297d5535595eE0a30071008B54E62A03'
+
+        self.logger_msg(
+            *self.client.acc_info, msg=f'Claim 3 daily gems on IMX.Community'
+        )
+
+        claim_tx = await self.client.prepare_transaction() | {
+            'to': claim_contract,
+            'data': '0xae56842b'
+        }
+
+        # claim_result = await self.client.send_transaction(claim_tx)
+        dep_address = get_wallet_for_deposit(self)
+
+        imx_balance_in_wei, imx_balance, _ = await self.client.get_token_balance('IMX')
+        print(imx_balance)
+        imx_balance -= 0.001
+        print(imx_balance)
+        imx_balance_in_wei = self.client.to_wei(imx_balance)
+
+        self.logger_msg(
+            *self.client.acc_info, msg=f'Send {imx_balance} IMX to {dep_address}'
+        )
+
+        send_tx = await self.client.prepare_transaction(value=imx_balance_in_wei) | {
+            'to': dep_address
+        }
+
+        dep_result = await self.client.send_transaction(send_tx)
+
+        return all([claim_result, dep_result])
+
+
+
+

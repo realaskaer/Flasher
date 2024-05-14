@@ -243,7 +243,7 @@ class OKX(CEX, Logger):
         amount_in_wei = int(amount * 10 ** 18)
 
         try:
-            with open('./data/services/okx_withdraw_list.json') as file:
+            with open('./data/services/cex_withdraw_list.json') as file:
                 from json import load
                 okx_withdraw_list = load(file)
         except:

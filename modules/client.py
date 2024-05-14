@@ -20,7 +20,7 @@ from settings import (
     RHINO_CHAIN_ID_TO,
     RHINO_DEPOSIT_AMOUNT,
     ACROSS_CHAIN_ID_TO,
-    ACROSS_DEPOSIT_AMOUNT, GAS_PRICE_MULTIPLIER,
+    ACROSS_DEPOSIT_AMOUNT, GAS_PRICE_MULTIPLIER, GAS_LIMIT_MULTIPLIER,
 )
 
 
@@ -195,10 +195,10 @@ class Client(Logger):
                 max_fee_per_gas = base_fee + max_priority_fee_per_gas
 
                 tx_params['maxPriorityFeePerGas'] = max_priority_fee_per_gas
-                tx_params['maxFeePerGas'] = int(max_fee_per_gas * GAS_PRICE_MULTIPLIER * 10)
+                tx_params['maxFeePerGas'] = int(max_fee_per_gas * GAS_PRICE_MULTIPLIER)
                 tx_params['type'] = '0x2'
             else:
-                tx_params['gasPrice'] = int(await self.w3.eth.gas_price * GAS_PRICE_MULTIPLIER * 5)
+                tx_params['gasPrice'] = int(await self.w3.eth.gas_price * GAS_PRICE_MULTIPLIER)
 
             return tx_params
         except TimeoutError or ValueError as error:
@@ -246,7 +246,7 @@ class Client(Logger):
                                poll_latency:int = 10, timeout:int = 360):
         try:
             if not without_gas:
-                transaction['gas'] = random.randint(3500000, 5000000)
+                transaction['gas'] = int((await self.w3.eth.estimate_gas(transaction)) * GAS_LIMIT_MULTIPLIER)
         except Exception as error:
             raise RuntimeError(f'Gas calculating | {self.get_normalize_error(error)}')
 

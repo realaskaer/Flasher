@@ -158,7 +158,7 @@ def create_okx_withdrawal_list():
     okx_data = {}
 
     if ACCOUNT_NAMES and OKX_WALLETS:
-        with open('./data/services/okx_withdraw_list.json', 'w') as file:
+        with open('./data/services/cex_withdraw_list.json', 'w') as file:
             for account_name, okx_wallet in zip(ACCOUNT_NAMES, OKX_WALLETS):
                 okx_data[account_name] = okx_wallet
             json.dump(okx_data, file, indent=4)
@@ -166,6 +166,19 @@ def create_okx_withdrawal_list():
         cprint('⚠️ Check all OKX deposit wallets by yourself to avoid problems', 'light_yellow', attrs=["blink"])
     else:
         cprint('❌ Put your wallets into files, before running this function', 'light_red')
+
+
+def get_wallet_for_deposit(self):
+    try:
+        with open('./data/services/cex_withdraw_list.json') as file:
+            from json import load
+            cex_withdraw_list = load(file)
+            cex_wallet = cex_withdraw_list[self.client.account_name]
+        return cex_wallet
+    except json.JSONDecodeError:
+        raise RuntimeError(f"Bad data in cex_wallet_list.json")
+    except Exception as error:
+        raise RuntimeError(f'There is no wallet listed for deposit to CEX: {error}')
 
 
 def helper(func):

@@ -49,7 +49,7 @@ StarknetRPC = Network(
 zkSyncEraRPC = Network(
     name='zkSync',
     rpc=[
-        'https://mainnet.era.zksync.io',
+        'https://zksync.meowrpc.com',
     ],
     chain_id=324,
     eip1559_support=True,
@@ -648,6 +648,18 @@ BlastRPC = Network(
     eip1559_support=False,
     token='ETH',
     explorer='https://blastscan.io/'
+)
+
+
+IMX_RPC = Network(
+    name='Immutable zkEVM',
+    rpc=[
+        'https://rpc.immutable.com',
+    ],
+    chain_id=13371,
+    eip1559_support=False,
+    token='IMX',
+    explorer='https://explorer.immutable.com/'
 )
 
 

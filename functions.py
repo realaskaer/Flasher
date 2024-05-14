@@ -55,7 +55,8 @@ def get_network_by_chain_id(chain_id):
         43: XPLA_RPC,
         44: LootChainRPC,
         45: ZKFairRPC,
-        46: BlastRPC
+        46: BlastRPC,
+        50: IMX_RPC
     }[chain_id]
 
 
@@ -160,6 +161,12 @@ async def approve_weth_for_buy_node(account_number, private_key, _, proxy):
     network = zkSyncEraRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
     return await worker.buy_node(approve_mode=True)
+
+
+async def claim_and_transfer_imx(account_number, private_key, _, proxy):
+    network = IMX_RPC
+    worker = Custom(get_client(account_number, private_key, network, proxy))
+    return await worker.claim_and_transfer_imx()
 
 
 async def stress_test(account_number, private_key, network, proxy):
