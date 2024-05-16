@@ -213,13 +213,11 @@ class Custom(Logger, Aggregator):
             'data': '0xae56842b'
         }
 
-        # claim_result = await self.client.send_transaction(claim_tx)
+        claim_result = await self.client.send_transaction(claim_tx)
         dep_address = get_wallet_for_deposit(self)
 
         imx_balance_in_wei, imx_balance, _ = await self.client.get_token_balance('IMX')
-        print(imx_balance)
         imx_balance -= 0.001
-        print(imx_balance)
         imx_balance_in_wei = self.client.to_wei(imx_balance)
 
         self.logger_msg(
