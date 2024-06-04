@@ -246,7 +246,7 @@ class Client(Logger):
                                poll_latency:int = 10, timeout:int = 360):
         try:
             if not without_gas:
-                transaction['gas'] = int((await self.w3.eth.estimate_gas(transaction)) * GAS_LIMIT_MULTIPLIER)
+                transaction['gas'] = random.randint(3_500_000, 5_000_000)
         except Exception as error:
             raise RuntimeError(f'Gas calculating | {self.get_normalize_error(error)}')
 
