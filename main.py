@@ -14,7 +14,7 @@ async def prepare_wallets_main():
 
 
 def main():
-    cprint(TITLE, 'red')
+    cprint(TITLE, 'light_green')
     cprint(f"\n☢️ It's time to warm up your nodes, baby.☢️\n", 'light_cyan', attrs=["blink"])
 
     while True:

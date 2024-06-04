@@ -143,9 +143,10 @@ LAYERSWAP_API_KEY = ""
 """
 
 # в софте всего 9 тиров нод
-NODE_COUNT = 3     # кол-во нод к покупке за 1 транзакцию
+NODE_COUNT = 5     # кол-во нод к покупке за 1 транзакцию
 NODE_TIER_BUY = 1   # тир ноды к покупке, если поставить 0, то софт будет пытаться взять по очереди все тиры до NODE_TIER_MAX
 NODE_TIER_MAX = 5   # максимальный тир, при NODE_TIER_BUY = 0
+NODE_TRYING_WITHOUT_REF = False  # пробовать купить ноды без рефки
 
 CYBERV_NFT_COUNT = 0
 
@@ -207,5 +208,6 @@ MEMCOIN_AMOUNT = 0.004  # сумма в ETH для MEMCOIN_MODE_CODE = 1
 """
 
 CLASSIC_ROUTES_MODULES_USING = [
-     ['claim_and_transfer_imx'],
+     ['approve_weth_for_buy_node'],
+     ['buy_node'],
 ]

@@ -152,13 +152,13 @@ async def buy_cyberv(account_number, private_key, _, proxy):
 
 
 async def buy_node(account_number, private_key, _, proxy):
-    network = zkSyncEraRPC
+    network = ArbitrumRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
     return await worker.buy_node()
 
 
 async def approve_weth_for_buy_node(account_number, private_key, _, proxy):
-    network = zkSyncEraRPC
+    network = ArbitrumRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
     return await worker.buy_node(approve_mode=True)
 

@@ -1,8 +1,9 @@
+import asyncio
 import copy
 
 from config import AETHIR_ABI, CYBERV_ABI, TOKENS_PER_CHAIN
 from modules import Logger, Aggregator
-from settings import MEMCOIN_AMOUNT, CYBERV_NFT_COUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY
+from settings import MEMCOIN_AMOUNT, CYBERV_NFT_COUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY, NODE_TRYING_WITHOUT_REF
 from utils.tools import helper, get_wallet_for_deposit
 
 
@@ -45,18 +46,20 @@ class Custom(Logger, Aggregator):
             raise RuntimeError('NODE_COUNT should ne a digit! (NODE_COUNT = 10)')
 
         if not approve_mode:
-            self.logger_msg(*self.client.acc_info, msg=f"Trying to buy Sophon Node Tier #{index}")
+            self.logger_msg(*self.client.acc_info, msg=f"Trying to buy Carv Node Tier #{index}")
         else:
-            self.logger_msg(*self.client.acc_info, msg=f"Approve for buying Sophon Node Tier #{index}")
+            self.logger_msg(*self.client.acc_info, msg=f"Approve for buying Carv Node Tier #{index}")
 
         total_price = int(price * NODE_COUNT * 10 ** 18)
         total_count = int(NODE_COUNT * 10 ** 18)
         ref_flag = False
 
-        weth_address = TOKENS_PER_CHAIN['zkSync']['WETH']
+        weth_address = TOKENS_PER_CHAIN['Arbitrum']['WETH']
 
         if approve_mode:
-            return await self.client.check_for_approved(weth_address, node_contract.address, without_bal_check=True)
+            result = await self.client.check_for_approved(weth_address, node_contract.address, without_bal_check=True)
+            await asyncio.sleep(1)
+            return result
 
         try:
             transaction = await node_contract.functions.whitelistedPurchaseWithCode(
@@ -77,24 +80,28 @@ class Custom(Logger, Aggregator):
                 ).build_transaction(tx_params)
                 ref_flag = True
             except Exception as error:
-                try:
-                    self.logger_msg(*self.client.acc_info, msg=f"Method#2. {error}", type_msg='error')
-                    transaction = await node_contract.functions.whitelistedPurchase(
-                        total_price,
-                        [],
-                        total_count,
-                    ).build_transaction(tx_params)
-                except Exception as error:
+                if NODE_TRYING_WITHOUT_REF:
                     try:
-                        self.logger_msg(*self.client.acc_info, msg=f"Method#3. {error}", type_msg='error')
+                        self.logger_msg(*self.client.acc_info, msg=f"Method#2. {error}", type_msg='error')
                         transaction = await node_contract.functions.whitelistedPurchase(
                             total_price,
                             [],
-                            total_price,
+                            total_count,
                         ).build_transaction(tx_params)
                     except Exception as error:
-                        self.logger_msg(*self.client.acc_info, msg=f"Method#4. {error}", type_msg='error')
-                        return False
+                        try:
+                            self.logger_msg(*self.client.acc_info, msg=f"Method#3. {error}", type_msg='error')
+                            transaction = await node_contract.functions.whitelistedPurchase(
+                                total_price,
+                                [],
+                                total_price,
+                            ).build_transaction(tx_params)
+                        except Exception as error:
+                            self.logger_msg(*self.client.acc_info, msg=f"Method#4. {error}", type_msg='error')
+                            return False
+                else:
+                    self.logger_msg(*self.client.acc_info, msg=f"Method#2. {error}", type_msg='error')
+                    return False
 
         tx = await self.client.send_transaction(transaction)
 
@@ -113,15 +120,15 @@ class Custom(Logger, Aggregator):
     @helper
     async def buy_node(self, approve_mode: bool = False):
         nodes_data = {
-            1: ("0xc9110F53C042a61d1b0f95342e61d62714F8A2E6", 0.0813),
-            2: ("0x11B2669a07A0D17555a7Ab54C0C37f5c8655A739", 0.0915),
-            3: ("0x58078e429a99478304a25B2Ab03ABE79199bE618", 0.103),
-            4: ("0x2E89CAE8F6532687b015F4BA320F57c77920B451", 0.1158),
-            5: ("0x396Ea0670e3112BC344791Ee7931a5A55E0bDBd1", 0.1303),
-            6: ("0xB08772AA562ED5d06B34fb211c51EC92debF7b26", 0.1466),
-            7: ("0x772eDA6C5aACC61771F9b5f9423D381D311a7018", 0.1649),
-            8: ("0x4842547944832Fe833af677BFDB157dEf391e685", 0.1855),
-            9: ("0x3F0d099120Bf804606835DEFa6dA1A5E784328D6", 0.2087)
+            1: ("0x80adA4D9F18996c19df7d07aCfE78f9460BBC151", 0.1316),
+            2: ("0x82720570AC1847FD161b5A01Fe6440c316e5742c", 0.1580),
+            3: ("0x3F3C6DE3Bbe1F2fdFb4B43a49e599885B7Fb1a27", 0.1817),
+            4: ("0xc674BEB2f5Cd94A748589A9Dadd838b9E09AABD4", 0.2071),
+            5: ("0xF8a8A71d90f1AE2F17Aa4eE9319820B5F394f629", 0.2340),
+            6: ("0x125711d6f0AAc9DFFEd75AD2B8C51bDaF5FAEd71", 0.2633),
+            7: ("0x3371b74beC1dE3E115A4148956F94f55bEA8cD00", 0.2962),
+            8: ("0xa1D3632C9Dc73e8EcEBAe99a8Ea00F50F226A8B9", 0.3332),
+            9: ("0xD7C3E0C20Ab22f1e9A59e764B1b562E1dD7438B0", 0.3749)
         }
 
         if NODE_TIER_BUY != 0:
@@ -160,7 +167,7 @@ class Custom(Logger, Aggregator):
 
                     if not result:
                         self.logger_msg(
-                            *self.client.acc_info, msg=f"Can`t buy Sophon Node Tier #{index}", type_msg='warning'
+                            *self.client.acc_info, msg=f"Can`t buy Carv Node Tier #{index}", type_msg='warning'
                         )
                     else:
                         break
