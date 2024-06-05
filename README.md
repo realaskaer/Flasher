@@ -1,4 +1,6 @@
 ﻿
+Не актуально 05.06.2024
+
 # ⚔️ Attack Machine
 
 ![](https://github.com/realaskaer/Scroll/blob/master/data/preview.png)
