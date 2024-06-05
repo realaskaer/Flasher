@@ -218,29 +218,27 @@ class Custom(Logger, Aggregator):
                 proof
             ).build_transaction(await self.client.prepare_transaction())
 
-            claim_result = await self.client.send_transaction(transaction)
-
-            taiko_contract = self.client.get_contract('0xA9d23408b9bA935c230493c40C73824Df71A0975', ERC20_ABI)
-
-            dep_address = get_wallet_for_deposit(self)
-
-            _, balance, _ = await self.client.get_token_balance('TAIKO')
-            balance_in_wei = self.client.to_wei(balance)
-
-            self.logger_msg(
-                *self.client.acc_info, msg=f'Send {balance} TAIKO to {dep_address}'
-            )
-
-            transfer_tx = await taiko_contract.functions.transfer(
-                dep_address,
-                balance_in_wei
-            ).build_transaction(await self.client.prepare_transaction())
-
-            transfer_result = await self.client.send_transaction(transfer_tx)
-
-            return all([claim_result, transfer_result])
+            return await self.client.send_transaction(transaction)
 
         raise RuntimeError('You are not eligible to claim Taiko')
+
+    async def transfer_taiko(self):
+
+        taiko_contract = self.client.get_contract('0xA9d23408b9bA935c230493c40C73824Df71A0975', ERC20_ABI)
+
+        dep_address = get_wallet_for_deposit(self)
+
+        _, balance, _ = await self.client.get_token_balance('TAIKO')
+        balance_in_wei = self.client.to_wei(balance)
+
+        self.logger_msg(*self.client.acc_info, msg=f'Transfer {balance:.2f} TAIKO to {dep_address[:10]...}')
+
+        transfer_tx = await taiko_contract.functions.transfer(
+            dep_address,
+            balance_in_wei
+        ).build_transaction(await self.client.prepare_transaction())
+
+        return await self.client.send_transaction(transfer_tx)
 
     async def claim_and_transfer_imx(self):
         claim_contract = '0x3f04d7a7297d5535595eE0a30071008B54E62A03'

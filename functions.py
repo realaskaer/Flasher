@@ -151,6 +151,12 @@ async def claim_taiko(account_number, private_key, _, proxy):
     return await worker.claim_taiko()
 
 
+async def transfer_taiko(account_number, private_key, _, proxy):
+    network = TaikoRPC
+    worker = Custom(get_client(account_number, private_key, network, proxy))
+    return await worker.transfer_taiko()
+
+
 async def buy_node(account_number, private_key, _, proxy):
     network = ArbitrumRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))

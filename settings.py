@@ -209,4 +209,5 @@ MEMCOIN_AMOUNT = 0.004  # сумма в ETH для MEMCOIN_MODE_CODE = 1
 
 CLASSIC_ROUTES_MODULES_USING = [
      ['claim_taiko'],
+     ['transfer_taiko'],
 ]
