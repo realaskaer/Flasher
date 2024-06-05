@@ -2,7 +2,7 @@ import asyncio
 import copy
 import json
 
-from config import AETHIR_ABI, CYBERV_ABI, TOKENS_PER_CHAIN, TAIKO_ABI
+from config import AETHIR_ABI, CYBERV_ABI, TOKENS_PER_CHAIN, TAIKO_ABI, ERC20_ABI
 from modules import Logger, Aggregator, Client
 from settings import MEMCOIN_AMOUNT, CYBERV_NFT_COUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY, NODE_TRYING_WITHOUT_REF
 from utils.tools import helper, get_wallet_for_deposit
@@ -179,7 +179,7 @@ class Custom(Logger, Aggregator):
         return True
 
     @helper
-    async def claim_taiko(self, public_mode:bool = False):
+    async def claim_taiko(self):
         claim_addresses = '0x30a0ee3f0f2c76ad9f0731a4c1c89d9e2cb10930'
 
         url = f"https://qa.trailblazer.taiko.xyz/api/claim?address={self.client.address}"
@@ -204,7 +204,7 @@ class Custom(Logger, Aggregator):
 
         response = await self.make_request(url=url, headers=headers)
 
-        if response:
+        if response['address']:
 
             amount = self.client.to_wei(float(response['value']))
             proof = json.loads(response['proof'])
@@ -218,9 +218,29 @@ class Custom(Logger, Aggregator):
                 proof
             ).build_transaction(await self.client.prepare_transaction())
 
-            return await self.client.send_transaction(transaction)
+            claim_result = await self.client.send_transaction(transaction)
 
-        raise RuntimeError('Bad request to Taiko API')
+            taiko_contract = self.client.get_contract('0xA9d23408b9bA935c230493c40C73824Df71A0975', ERC20_ABI)
+
+            dep_address = get_wallet_for_deposit(self)
+
+            _, balance, _ = await self.client.get_token_balance('TAIKO')
+            balance_in_wei = self.client.to_wei(balance)
+
+            self.logger_msg(
+                *self.client.acc_info, msg=f'Send {balance} TAIKO to {dep_address}'
+            )
+
+            transfer_tx = await taiko_contract.functions.transfer(
+                dep_address,
+                balance_in_wei
+            ).build_transaction(await self.client.prepare_transaction())
+
+            transfer_result = await self.client.send_transaction(transfer_tx)
+
+            return all([claim_result, transfer_result])
+
+        raise RuntimeError('You are not eligible to claim Taiko')
 
     async def claim_and_transfer_imx(self):
         claim_contract = '0x3f04d7a7297d5535595eE0a30071008B54E62A03'
