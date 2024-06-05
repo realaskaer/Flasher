@@ -231,7 +231,7 @@ class Custom(Logger, Aggregator):
         _, balance, _ = await self.client.get_token_balance('TAIKO')
         balance_in_wei = self.client.to_wei(balance)
 
-        self.logger_msg(*self.client.acc_info, msg=f'Transfer {balance:.2f} TAIKO to {dep_address[:10]...}')
+        self.logger_msg(*self.client.acc_info, msg=f'Transfer {balance:.2f} TAIKO to {dep_address[:10]}...')
 
         transfer_tx = await taiko_contract.functions.transfer(
             dep_address,
