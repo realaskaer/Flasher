@@ -234,7 +234,7 @@ class Custom(Logger, Aggregator):
         self.logger_msg(*self.client.acc_info, msg=f'Transfer {balance:.2f} TAIKO to {dep_address[:10]}...')
 
         transfer_tx = await taiko_contract.functions.transfer(
-            dep_address,
+    self.client.w3.to_checksum_address(dep_address),  
             balance_in_wei
         ).build_transaction(await self.client.prepare_transaction())
 
