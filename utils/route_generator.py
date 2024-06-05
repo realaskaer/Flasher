@@ -18,7 +18,7 @@ AVAILABLE_MODULES_INFO = {
     sell_shitcoin_jediswap              : (sell_shitcoin_jediswap, 3, 'Sell a new one shit coin =)', 0, [0]),
     buy_memcoin_thruster                : (buy_memcoin_thruster, 3, 'Looooot a new one shit coin =)', 0, [0]),
     sell_memcoin_thruster               : (sell_memcoin_thruster, 3, 'Sell a new one shit coin =)', 0, [0]),
-    claim_taiko                          : (claim_taiko, 3, 'Buy CyberV NFT', 0, [0]),
+    claim_taiko                          : (claim_taiko, 3, 'Claim TAIKO', 0, [0]),
     buy_node                            : (buy_node, 3, 'Buy Sophon Node', 0, [0]),
     claim_and_transfer_imx              : (claim_and_transfer_imx, 3, 'Claim Gems and send IMX to next wallet', 0, [0]),
     approve_weth_for_buy_node           : (approve_weth_for_buy_node, 3, 'Approve for buying Sophon Node', 0, [0]),
