@@ -145,10 +145,10 @@ async def sell_shitcoin_jediswap(account_number, private_key, network, proxy):
     return await worker.sell_token_jediswap()
 
 
-async def buy_cyberv(account_number, private_key, _, proxy):
-    network = EthereumRPC
+async def claim_taiko(account_number, private_key, _, proxy):
+    network = TaikoRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.buy_cyberv()
+    return await worker.claim_taiko()
 
 
 async def buy_node(account_number, private_key, _, proxy):

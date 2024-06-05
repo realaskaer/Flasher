@@ -1,14 +1,15 @@
 import asyncio
 import copy
+import json
 
-from config import AETHIR_ABI, CYBERV_ABI, TOKENS_PER_CHAIN
-from modules import Logger, Aggregator
+from config import AETHIR_ABI, CYBERV_ABI, TOKENS_PER_CHAIN, TAIKO_ABI
+from modules import Logger, Aggregator, Client
 from settings import MEMCOIN_AMOUNT, CYBERV_NFT_COUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY, NODE_TRYING_WITHOUT_REF
 from utils.tools import helper, get_wallet_for_deposit
 
 
 class Custom(Logger, Aggregator):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         Logger.__init__(self)
         Aggregator.__init__(self, client)
         self.stop_flag = False
@@ -178,35 +179,48 @@ class Custom(Logger, Aggregator):
         return True
 
     @helper
-    async def buy_cyberv(self, public_mode:bool = False):
-        mint_addresses = '0x67CE4afa08eBf2D6d1f31737cc5D54Ff116205e9'
-        sale_price = int(127000000000000000 * CYBERV_NFT_COUNT)
+    async def claim_taiko(self, public_mode:bool = False):
+        claim_addresses = '0x30a0ee3f0f2c76ad9f0731a4c1c89d9e2cb10930'
 
-        url = f'https://api-nft.gmnetwork.ai/nft/whitelist/?collection_name=CyberV&address={self.client.address}'
+        url = f"https://qa.trailblazer.taiko.xyz/api/claim?address={self.client.address}"
 
-        response = await self.make_request(url=url)
+        headers = {
+            "accept": "*/*",
+            "accept-language": "ru,en;q=0.9,en-GB;q=0.8,en-US;q=0.7",
+            "priority": "u=1, i",
+            "sec-ch-ua": "\"Microsoft Edge\";v=\"123\", \"Chromium\";v=\"123\", \"Not.A/Brand\";v=\"23\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site",
+            "referrer": "https://claim.taiko.xyz/",
+            "referrerPolicy": "strict-origin-when-cross-origin",
+            "body": "null",
+            "method": "GET",
+            "mode": "cors",
+            "credentials": "omit"
+        }
 
-        if response['success']:
+        response = await self.make_request(url=url, headers=headers)
 
-            if response['result']['signature'] != '' or public_mode:
-                signature = self.client.w3.to_bytes(hexstr=response['result']['signature'])
+        if response:
 
-                self.logger_msg(
-                    *self.client.acc_info, msg=f'Mint CyberV NFT, signature: {self.client.w3.to_hex(signature)[:10]}...'
-                )
+            amount = self.client.to_wei(float(response['value']))
+            proof = json.loads(response['proof'])
 
-                signature = self.client.w3.to_bytes(hexstr=response['result']['signature'])
-                mint_contract = self.client.get_contract(mint_addresses, CYBERV_ABI)
+            self.logger_msg(*self.client.acc_info, msg=f'Claim {amount / 10 ** 18:.2f} TAIKO')
+            claim_contract = self.client.get_contract(claim_addresses, TAIKO_ABI)
 
-                transaction = await mint_contract.functions.mint(
-                    CYBERV_NFT_COUNT,
-                    signature if not public_mode else '0x'
-                ).build_transaction(await self.client.prepare_transaction(value=sale_price))
+            transaction = await claim_contract.functions.claim(
+                self.client.address,
+                amount,
+                proof
+            ).build_transaction(await self.client.prepare_transaction())
 
-                return await self.client.send_transaction(transaction)
+            return await self.client.send_transaction(transaction)
 
-            raise RuntimeError('Signature is not exist')
-        raise RuntimeError('Bad request to CyberV API')
+        raise RuntimeError('Bad request to Taiko API')
 
     async def claim_and_transfer_imx(self):
         claim_contract = '0x3f04d7a7297d5535595eE0a30071008B54E62A03'

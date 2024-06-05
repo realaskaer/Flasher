@@ -76,9 +76,25 @@ ArbitrumRPC = Network(
         'https://rpc.ankr.com/arbitrum/',
     ],
     chain_id=42161,
-    eip1559_support=True,
+    eip1559_support=False,
     token='ETH',
     explorer='https://arbiscan.io/',
+)
+
+TaikoRPC = Network(
+    name='Taiko',
+    rpc=[
+        'https://rpc.ankr.com/taiko/d52e9aed12d3e5eb1570d715d18bba7f60fdc942dd48df6e494e6bc00844e37c',
+        'https://rpc.ankr.com/taiko',
+        'https://rpc.mainnet.taiko.xyz',
+        'https://rpc.taiko.tools',
+        'https://taiko.blockpi.network/v1/rpc/public',
+        'https://rpc.taiko.xyz',
+    ],
+    chain_id=167000,
+    eip1559_support=False,
+    token='ETH',
+    explorer='https://taikoscan.io/',
 )
 
 

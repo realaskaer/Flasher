@@ -208,6 +208,5 @@ MEMCOIN_AMOUNT = 0.004  # сумма в ETH для MEMCOIN_MODE_CODE = 1
 """
 
 CLASSIC_ROUTES_MODULES_USING = [
-     ['approve_weth_for_buy_node'],
-     ['buy_node'],
+     ['claim_taiko'],
 ]
