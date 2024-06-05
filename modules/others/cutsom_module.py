@@ -66,7 +66,7 @@ class Custom(Logger, Aggregator):
                 total_price,
                 [],
                 total_price,
-                'cryptoearn',
+                'crypto_earn_important',
             ).build_transaction(tx_params)
             ref_flag = True
         except Exception as error:
@@ -76,7 +76,7 @@ class Custom(Logger, Aggregator):
                     total_price,
                     [],
                     total_count,
-                    'cryptoearn',
+                    'crypto_earn_important',
                 ).build_transaction(tx_params)
                 ref_flag = True
             except Exception as error:
