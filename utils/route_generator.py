@@ -20,6 +20,7 @@ AVAILABLE_MODULES_INFO = {
     sell_memcoin_thruster               : (sell_memcoin_thruster, 3, 'Sell a new one shit coin =)', 0, [0]),
     claim_taiko                          : (claim_taiko, 3, 'Claim TAIKO', 0, [0]),
     claim_zk                             : (claim_zk, 3, 'Claim ZK', 0, [0]),
+    swap_zk                             : (swap_zk, 3, 'Swap ZK on SyncSwap', 0, [0]),
     transfer_taiko                       : (transfer_taiko, 3, 'Transfer TAIKO', 0, [0]),
     transfer_zk                          : (transfer_zk, 3, 'Transfer ZK', 0, [0]),
     buy_node                            : (buy_node, 3, 'Buy Sophon Node', 0, [0]),

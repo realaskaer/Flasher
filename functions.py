@@ -129,6 +129,16 @@ async def swap_protoss(account_number, private_key, network, proxy):
     return await worker.swap()
 
 
+async def swap_syncswap(current_client, **kwargs):
+    worker = SyncSwap(current_client)
+    return await worker.swap(**kwargs)
+
+
+async def swap_zk(current_client, **kwargs):
+    worker = Custom(current_client)
+    return await worker.swap_zk(**kwargs)
+
+
 async def buy_memcoin_thruster(account_number, private_key, network, proxy):
     worker = Custom(get_client(account_number, private_key, network, proxy))
     return await worker.buy_memecoin_thruster()

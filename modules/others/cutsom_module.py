@@ -286,6 +286,7 @@ class Custom(Logger, Aggregator):
 
         raise RuntimeError('You are not eligible to claim ZK')
 
+    @helper
     async def transfer_zk(self):
 
         zk_contract = self.client.get_contract('0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E', ERC20_ABI)
@@ -303,6 +304,17 @@ class Custom(Logger, Aggregator):
         ).build_transaction(await self.client.prepare_transaction())
 
         return await self.client.send_transaction(transfer_tx)
+
+    @helper
+    async def swap_zk(self):
+        from functions import swap_syncswap
+
+        _, balance, _ = await self.client.get_token_balance('ZK', omnicheck=True)
+        balance_in_wei = self.client.to_wei(balance)
+
+        swap_data = 'ZK', 'USDC', balance, balance_in_wei
+
+        return await swap_syncswap(self.client, swap_data=swap_data)
 
     async def claim_and_transfer_imx(self):
         claim_contract = '0x3f04d7a7297d5535595eE0a30071008B54E62A03'

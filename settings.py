@@ -209,5 +209,5 @@ MEMCOIN_AMOUNT = 0.004  # сумма в ETH для MEMCOIN_MODE_CODE = 1
 
 CLASSIC_ROUTES_MODULES_USING = [
      ['claim_zk'],
-     ['transfer_zk'],
+     ['transfer_zk'],  # ['swap_zk'] если нужен свап, то поставьте этот модуль. Свап будет на USDC
 ]

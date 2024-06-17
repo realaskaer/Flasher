@@ -7,3 +7,4 @@ from .protoss import Protoss
 from .myswap import MySwap
 from .sithswap import SithSwap
 from .thruster import Thruster
+from .syncswap import SyncSwap

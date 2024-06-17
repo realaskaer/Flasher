@@ -9,6 +9,7 @@ from .swaps import SithSwap
 from .swaps import Protoss
 from .swaps import MySwap
 from .swaps import Thruster
+from .swaps import SyncSwap
 from .others import Custom
 from .others import ZKFair
 from .others import Inscription
