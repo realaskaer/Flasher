@@ -157,6 +157,18 @@ async def transfer_taiko(account_number, private_key, _, proxy):
     return await worker.transfer_taiko()
 
 
+async def claim_zk(account_number, private_key, _, proxy):
+    network = zkSyncEraRPC
+    worker = Custom(get_client(account_number, private_key, network, proxy))
+    return await worker.claim_zk()
+
+
+async def transfer_zk(account_number, private_key, _, proxy):
+    network = zkSyncEraRPC
+    worker = Custom(get_client(account_number, private_key, network, proxy))
+    return await worker.transfer_zk()
+
+
 async def buy_node(account_number, private_key, _, proxy):
     network = ArbitrumRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
