@@ -49,7 +49,7 @@ StarknetRPC = Network(
 zkSyncEraRPC = Network(
     name='zkSync',
     rpc=[
-        'https://zksync.meowrpc.com',
+        'https://mainnet.era.zksync.io',
     ],
     chain_id=324,
     eip1559_support=True,
