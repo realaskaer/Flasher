@@ -270,67 +270,6 @@ class Custom(Logger, Aggregator):
 
         response = await self.make_request(url=url, headers=headers)
 
-        # {
-        #     "allocations": [
-        #         {
-        #             "userId": "0xAC50E5a0a6616EBEC91072aF86F6fd33A8D6a637",
-        #             "tokenAmount": "945000000000000000000",
-        #             "criteria": [
-        #                 {
-        #                     "criteriaId": "contract_interactions",
-        #                     "description": "Interacted with 10 smart contracts",
-        #                     "criteriaType": "zksync"
-        #                 },
-        #                 {
-        #                     "criteriaId": "defi_liquidity_provider",
-        #                     "description": "Deposited liquidity into DeFi protocols",
-        #                     "criteriaType": "zksync"
-        #                 },
-        #                 {
-        #                     "criteriaId": "heavy_token_trader",
-        #                     "description": "Traded 10 different ERC20 tokens",
-        #                     "criteriaType": "zksync"
-        #                 }
-        #             ],
-        #             "airdrop": {
-        #                 "id": "f66d93c9-2681-4428-9500-e19fe193b973",
-        #                 "contractAddress": "0x66Fd4FC8FA52c9bec2AbA368047A0b27e24ecfe4",
-        #                 "associationStopsAt": "2024-06-14T13:00:00.000Z",
-        #                 "claimStartsAt": "2024-06-17T07:00:00.000Z",
-        #                 "finalized": true
-        #             },
-        #             "associatedAddress": null,
-        #             "merkleIndex": "468722",
-        #             "merkleProof": [
-        #                 "0x43a1f0e0c84448470f285cd3e6ba7a68c2b6d8d9db99e8dd4a4677984162c1e1",
-        #                 "0x17c5998b583302ec58a056dcd416c5f5298f7acd4c90b983ccff1953ec552b4a",
-        #                 "0xaec13cb70b2afe6cb0b0b767f5dbcacf991103b0ede5d7b5623cbd4a998cf142",
-        #                 "0xa2fec5a692564c40a3fd487372f46f233f48652ac3bef7658d19b8334a6accc4",
-        #                 "0x9fff98e1ada049b3f490ea27ed4ec3995f1a8e6fd8f05939e0dccf371757e462",
-        #                 "0x549e93d921c0f7c9f3092b593fadb322033b17abc5611227dac3b16d64fa18da",
-        #                 "0xa1b952c3f3fdcb6a7d75efebac216bb2cf5c6bf98e0a7fe196d66f74dad79b96",
-        #                 "0x5c7762f2435cd3bb06fe7d530f2a547ced8c1326dda38b8e57d24984cb0237eb",
-        #                 "0x4ea5afcbea0f748ee92a0d87c2089ebc47424fb11b4dcef05b261bd92dfc82ae",
-        #                 "0x15dd718f8624ba23c6820f428b62ec135e5c74c7a1d31526cbe475ad176f6200",
-        #                 "0xfb8e8a62ac33c88fa8966e092833cbade11a056fea88dcc9ce35ac85e3240ebc",
-        #                 "0x779b3207f116bf76bdee16a7cbefba22d9890306572dee7fd0cbe18c713f0c60",
-        #                 "0xd659653a36c487cef5a2ca207d32f38387a620b51f1f328a021b88f89aed6a0a",
-        #                 "0xa0bbd120ecb966236fe728f18afe3fecb5b51fa2b6f978328d6d3f2b43a69dfa",
-        #                 "0x809a284b695378d6529e82239964c26c234448b8e7b175a9bcbba1e3eb081ae7",
-        #                 "0x18a83c79bb6ecee8d684e79d1d16f47f4f260d380a90999907b110404c9a502c",
-        #                 "0xd057d9bc8ed343edacad6541328d283cf0af83546c35f058a47e43495c3cf8c6",
-        #                 "0x640009ff94289cc311064e17d2b4b8132ee8d866e4e8067c4b0fbf14b3226342",
-        #                 "0x991068aad433c8990d4d8b9564af8e849a9285e2db7d9d3f20773673b4494d83",
-        #                 "0x74e8aa65670c322311dbc3a190daeba1b30b221ec0a2731cda27785942070bd9"
-        #             ],
-        #             "claimStatus": {
-        #                 "status": "queued",
-        #                 "estimatedExecutionAt": "2024-06-17T08:05:23.039Z"
-        #             }
-        #         }
-        #     ]
-        # }
-
         if response['allocations']:
             merkle_index = int(response['allocations'][0]['merkleIndex'])
             amount_in_wei = int(response['allocations'][0]['tokenAmount'])
@@ -402,7 +341,7 @@ class Custom(Logger, Aggregator):
 
          return self.client.w3.to_hex(signature)
 
-    async def get_claim_zk_signature(self, amount_in_wei, contract_address, timestamp):
+    async def get_claim_zk_signature(self, amount_in_wei, merkle_index, contract_address, timestamp):
         typed_data = {
             "types": {
                 "EIP712Domain": [
@@ -458,7 +397,7 @@ class Custom(Logger, Aggregator):
                 "verifyingContract": contract_address
             },
             "message": {
-                "index": "468722",
+                "index": merkle_index,
                 "claimant": {self.client.address},
                 "amount": amount_in_wei,
                 "delegatee": {self.client.address},
