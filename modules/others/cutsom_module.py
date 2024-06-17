@@ -244,7 +244,6 @@ class Custom(Logger, Aggregator):
 
         return await self.client.send_transaction(transfer_tx)
 
-    @helper
     async def get_zk_drop_info(self):
         url = f"https://api.zknation.io/eligibility?id={self.client.address}"
         
@@ -456,6 +455,7 @@ class Custom(Logger, Aggregator):
         captcha_key = await self.get_captcha_key(task_id)
         return captcha_key
 
+    @helper
     async def full_claim_zk(self):
         url = "https://api.zknation.io/claim"
 
