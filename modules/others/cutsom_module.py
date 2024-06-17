@@ -329,8 +329,8 @@ class Custom(Logger, Aggregator):
                 "verifyingContract": "0x5a7d6b2f92c77fad6ccabd7ee0624e64907eaf3e"
             },
             "message": {
-                "owner": {self.client.address},
-                "delegatee": {self.client.address},
+                "owner": f"{self.client.address}",
+                "delegatee": f"{self.client.address}",
                 "nonce": 0,
                 "expiry": timestamp
             }
@@ -398,9 +398,9 @@ class Custom(Logger, Aggregator):
             },
             "message": {
                 "index": merkle_index,
-                "claimant": {self.client.address},
+                "claimant": f"{self.client.address}",
                 "amount": amount_in_wei,
-                "delegatee": {self.client.address},
+                "delegatee": f"{self.client.address}",
                 "nonce": 0,
                 "expiry": timestamp
             }
