@@ -88,7 +88,7 @@ class Aggregator(ABC):
                                                params=params, json=json) as response:
             try:
                 data = await response.json()
-                if response.status == 200:
+                if response.status in [200, 201]:
                     return data
                 raise RuntimeError(f"Bad request to {self.__class__.__name__} API: {response.status}")
             except ContentTypeError:
