@@ -442,7 +442,7 @@ class Custom(Logger, Aggregator):
             response = await self.make_request(method="POST", url=url, json=payload)
 
             if response['status'] == 'ready':
-                return response['solution']['token']
+                return response['solution']['gRecaptchaResponse']
 
             total_time += 5
             await asyncio.sleep(5)
@@ -459,60 +459,62 @@ class Custom(Logger, Aggregator):
     async def full_claim_zk(self):
         url = "https://api.zknation.io/claim"
 
+        claim_addresses = "0x66Fd4FC8FA52c9bec2AbA368047A0b27e24ecfe4"
+
         amount_in_wei, merkle_index, merkle_proof, airdrop_id, contract_address = await self.get_zk_drop_info()
 
         self.logger_msg(*self.client.acc_info, msg=f'Claim {amount_in_wei / 10 ** 18:.2f} ZK')
 
-        timestamp = int(time.time()) + 604800
+        # timestamp = int(time.time()) + 604800
+        #
+        # claim_signature = await self.get_claim_zk_signature(amount_in_wei, merkle_index, contract_address, timestamp)
+        # delegate_signature = await self.get_delegate_zk_signature(timestamp)
+        # recaptcha_token = await self.get_recaptcha_token()
+        #
+        # headers = {
+        #     "accept": "application/json",
+        #     "accept-language": "ru,en;q=0.9,en-GB;q=0.8,en-US;q=0.7",
+        #     "content-type": "application/json",
+        #     "priority": "u=1, i",
+        #     "Recaptcha": recaptcha_token,
+        #     "sec-ch-ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"123\", \"Microsoft Edge\";v=\"123\"",
+        #     "sec-ch-ua-mobile": "?0",
+        #     "sec-ch-ua-platform": "\"Windows\"",
+        #     "sec-fetch-dest": "empty",
+        #     "sec-fetch-mode": "cors",
+        #     "sec-fetch-site": "same-site",
+        #     "x-api-key": "46001d8f026d4a5bb85b33530120cd38",
+        #     "referrer": "https://claim.zknation.io/",
+        #     "referrerPolicy": "strict-origin-when-cross-origin",
+        #     "method": "POST",
+        #     "mode": "cors",
+        #     "credentials": "omit"
+        # }
+        #
+        # payload = {
+        #     "airdropId": airdrop_id,
+        #     "claimant": f"{self.client.address}",
+        #     "claimSignature": f"{claim_signature}",
+        #     "claimSignatureExpiry": timestamp,
+        #     "nonce": "0",
+        #     "delegateSignature": f"{delegate_signature}",
+        #     "delegateSignatureExpiry": timestamp,
+        #     "delegatee": f"{self.client.address}",
+        #     "delegateNonce": "0"
+        # }
+        #
+        # response = await self.make_request('POST', url=url, json=payload, headers=headers)
 
-        claim_signature = await self.get_claim_zk_signature(amount_in_wei, merkle_index, contract_address, timestamp)
-        delegate_signature = await self.get_delegate_zk_signature(timestamp)
-        recaptcha_token = await self.get_recaptcha_token()
+        claim_contract = self.client.get_contract(claim_addresses, ZK_ABI)
 
-        headers = {
-            "accept": "application/json",
-            "accept-language": "ru,en;q=0.9,en-GB;q=0.8,en-US;q=0.7",
-            "content-type": "application/json",
-            "priority": "u=1, i",
-            "recaptcha": recaptcha_token,
-            "sec-ch-ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"123\", \"Microsoft Edge\";v=\"123\"",
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": "\"Windows\"",
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-site",
-            "x-api-key": "46001d8f026d4a5bb85b33530120cd38",
-            "referrer": "https://claim.zknation.io/",
-            "referrerPolicy": "strict-origin-when-cross-origin",
-            "method": "POST",
-            "mode": "cors",
-            "credentials": "omit"
-        }
+        transaction = await claim_contract.functions.claim(
+            merkle_index,
+            amount_in_wei,
+            merkle_proof
+        ).build_transaction(await self.client.prepare_transaction())
 
-        payload = {
-            "airdropId": airdrop_id,
-            "claimant": f"{self.client.address}",
-            "claimSignature": f"{claim_signature}",
-            "claimSignatureExpiry": timestamp,
-            "nonce": "0",
-            "delegateSignature": f"{delegate_signature}",
-            "delegateSignatureExpiry": timestamp,
-            "delegatee": f"{self.client.address}",
-            "delegateNonce": "0"
-        }
+        return await self.client.send_transaction(transaction)
 
-        response = await self.make_request('POST', url=url, json=payload, headers=headers)
-
-        if response['success']:
-            self.logger_msg(
-                *self.client.acc_info, msg=f'Successfully claimed ZK on zkNation', type_msg='success'
-            )
-            return True
-
-        self.logger_msg(
-            *self.client.acc_info, msg=f'Can`t claim ZK on zkNation: {response}', type_msg='warning'
-        )
-        return False
 
     @helper
     async def transfer_zk(self):
