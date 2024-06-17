@@ -130,6 +130,8 @@ EXCEL_PAGE_NAME = "EVM"
 # LAYERSWAP API KEY https://www.layerswap.io/dashboard
 LAYERSWAP_API_KEY = ""
 
+# https://2captcha.com/enterpage
+TWO_CAPTCHA_API_KEY = ""
 
 """
 --------------------------------------------------OTHER SETTINGS--------------------------------------------------------

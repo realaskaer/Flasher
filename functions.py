@@ -170,7 +170,7 @@ async def transfer_taiko(account_number, private_key, _, proxy):
 async def claim_zk(account_number, private_key, _, proxy):
     network = zkSyncEraRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.claim_zk()
+    return await worker.full_claim_zk()
 
 
 async def transfer_zk(account_number, private_key, _, proxy):
