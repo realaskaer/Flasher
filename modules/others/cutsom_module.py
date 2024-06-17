@@ -465,7 +465,7 @@ class Custom(Logger, Aggregator):
 
         timestamp = int(time.time()) + 604800
 
-        claim_signature = await self.get_claim_zk_signature(amount_in_wei, contract_address, timestamp)
+        claim_signature = await self.get_claim_zk_signature(amount_in_wei, merkle_index, contract_address, timestamp)
         delegate_signature = await self.get_delegate_zk_signature(timestamp)
         recaptcha_token = await self.get_recaptcha_token()
 
