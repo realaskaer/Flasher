@@ -530,7 +530,7 @@ class Custom(Logger, Aggregator):
 
             claim_contract = self.client.get_contract(claim_addresses, ZRO_ABI)
 
-            donate_amount = int((round(amount_to_claim / 10 ** 18) + 1) * 0.00004 * 10 ** 18)
+            donate_amount = int((round(amount_to_claim / 10 ** 18) + 1) * 0.00003 * 10 ** 18)
 
             transaction = await claim_contract.functions.donateAndClaim(
                 2,
