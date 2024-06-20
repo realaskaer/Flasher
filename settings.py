@@ -89,7 +89,7 @@ ACROSS_DEPOSIT_AMOUNT = (0.002, 0.002)    # (минимум, максимум) E
     EXCEL_PASSWORD          | Включает запрос пароля при входе в софт. Сначала установите пароль в таблице
     EXCEL_PAGE_NAME         | Название листа в таблице. Пример: 'Starknet' 
 """
-GLOBAL_NETWORK = 11            # Глобальная сеть работы в софте
+GLOBAL_NETWORK = 1            # Глобальная сеть работы в софте
 ACCOUNTS_IN_STREAM = 1         # Количество аккаунтов в потоке, софт всегда запускается в многопоточном режиме
 WALLETS_TO_WORK = 0            # Аккаунты к запуску. Примеры: 0 / 3 / 3, 20 / [3, 20]
 NUMBER_OF_STREAM = 1           # Не рабочая настройка,
@@ -200,6 +200,6 @@ MEMCOIN_AMOUNT = 0.004  # сумма в ETH для MEMCOIN_MODE_CODE = 1
 """
 
 CLASSIC_ROUTES_MODULES_USING = [
-     ['claim_zk'],
-     ['transfer_zk'],  # ['swap_zk'] если нужен свап, то поставьте этот модуль. Свап будет на USDC
+     ['claim_zro'],
+     ['transfer_zro'],
 ]

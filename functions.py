@@ -179,6 +179,18 @@ async def transfer_zk(account_number, private_key, _, proxy):
     return await worker.transfer_zk()
 
 
+async def claim_zro(account_number, private_key, _, proxy):
+    network = ArbitrumRPC
+    worker = Custom(get_client(account_number, private_key, network, proxy))
+    return await worker.full_claim_zro()
+
+
+async def transfer_zro(account_number, private_key, _, proxy):
+    network = ArbitrumRPC
+    worker = Custom(get_client(account_number, private_key, network, proxy))
+    return await worker.transfer_zro()
+
+
 async def buy_node(account_number, private_key, _, proxy):
     network = ArbitrumRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
