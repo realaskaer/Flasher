@@ -24,7 +24,7 @@ AVAILABLE_MODULES_INFO = {
     swap_zk                             : (swap_zk, 3, 'Swap ZK on SyncSwap', 0, [0]),
     transfer_taiko                       : (transfer_taiko, 3, 'Transfer TAIKO', 0, [0]),
     transfer_zk                          : (transfer_zk, 3, 'Transfer ZK', 0, [0]),
-    transfer_zro                          : (transfer_zk, 3, 'Transfer ZRO', 0, [0]),
+    transfer_zro                          : (transfer_zro, 3, 'Transfer ZRO', 0, [0]),
     buy_node                            : (buy_node, 3, 'Buy Sophon Node', 0, [0]),
     claim_and_transfer_imx              : (claim_and_transfer_imx, 3, 'Claim Gems and send IMX to next wallet', 0, [0]),
     approve_weth_for_buy_node           : (approve_weth_for_buy_node, 3, 'Approve for buying Sophon Node', 0, [0]),
