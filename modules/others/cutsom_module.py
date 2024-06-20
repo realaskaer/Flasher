@@ -516,13 +516,32 @@ class Custom(Logger, Aggregator):
 
     @helper
     async def full_claim_zro(self):
-        url = "https://api.zknation.io/claim"
+        url = f"https://www.layerzero.foundation/api/proof/{self.client.address}"
 
-        claim_addresses = "0x66Fd4FC8FA52c9bec2AbA368047A0b27e24ecfe4"
+        claim_addresses = "0xB09F16F625B363875e39ADa56C03682088471523"
 
-        amount_in_wei, merkle_index, merkle_proof, airdrop_id, contract_address = await self.get_zk_drop_info()
+        response = await self.make_request(url=url)
 
-        self.logger_msg(*self.client.acc_info, msg=f'Claim {amount_in_wei / 10 ** 18:.2f} ZRO')
+        if response['amount']:
+            amount_to_claim = int(response['amount'])
+            merkle_proof = response['proof'].split('|')
+
+            self.logger_msg(*self.client.acc_info, msg=f'Claim {amount_to_claim / 10 ** 18:.2f} ZRO')
+
+            claim_contract = self.client.get_contract(claim_addresses, ZRO_ABI)
+
+            donate_amount = int((round(amount_to_claim / 10 ** 18) + 1) * 0.00004 * 10 ** 18)
+
+            transaction = await claim_contract.functions.donateAndClaim(
+                2,
+                donate_amount,
+                amount_to_claim,
+                merkle_proof,
+                self.client.address,
+                '0x'
+            ).build_transaction(await self.client.prepare_transaction(value=donate_amount))
+
+            return await self.client.send_transaction(transaction)
 
         # timestamp = int(time.time()) + 604800
         #
@@ -563,16 +582,6 @@ class Custom(Logger, Aggregator):
         # }
         #
         # response = await self.make_request('POST', url=url, json=payload, headers=headers)
-
-        claim_contract = self.client.get_contract(claim_addresses, ZRO_ABI)
-
-        transaction = await claim_contract.functions.claim(
-            merkle_index,
-            amount_in_wei,
-            merkle_proof
-        ).build_transaction(await self.client.prepare_transaction())
-
-        return await self.client.send_transaction(transaction)
 
     @helper
     async def transfer_zk(self):

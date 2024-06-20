@@ -23,8 +23,6 @@ def main():
     print()
     cprint('Start checking all proxies...', 'light_cyan')
     print()
-    asyncio.run(runner.check_proxies_status())
-    print()
 
     while True:
         answer = select(
