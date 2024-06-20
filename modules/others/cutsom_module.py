@@ -550,9 +550,9 @@ class Custom(Logger, Aggregator):
                 from functions import OptimismRPC, BaseRPC, BSC_RPC
 
                 client_rpc, rpc_id, eid, withdraw_network = {
-                    2: (BaseRPC, 3, 30184, 8),
-                    3: (OptimismRPC, 7, 30111, 4),
-                    4: (BSC_RPC, 15, 30102, 21),
+                    2: (BaseRPC, 3, 30184, 6),
+                    3: (OptimismRPC, 7, 30111, 3),
+                    4: (BSC_RPC, 15, 30102, 8),
                 }[ZRO_DST_CHAIN]
 
                 donate_amount = (await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[-1]
