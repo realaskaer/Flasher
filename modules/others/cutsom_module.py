@@ -639,8 +639,7 @@ class Custom(Logger, Aggregator):
 
         dep_address = get_wallet_for_deposit(self)
 
-        _, balance, _ = await self.client.get_token_balance('ZRO', omnicheck=True)
-        balance_in_wei = self.client.to_wei(balance)
+        balance_in_wei, balance, _ = await self.client.get_token_balance('ZRO', omnicheck=True)
 
         if balance > 0:
 
