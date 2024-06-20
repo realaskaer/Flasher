@@ -612,14 +612,18 @@ class Custom(Logger, Aggregator):
         _, balance, _ = await self.client.get_token_balance('ZRO', omnicheck=True)
         balance_in_wei = self.client.to_wei(balance)
 
-        self.logger_msg(*self.client.acc_info, msg=f'Transfer {balance:.2f} ZRO to {dep_address[:10]}...')
+        if balance_in_wei != 0.0:
 
-        transfer_tx = await zro_contract.functions.transfer(
-            self.client.w3.to_checksum_address(dep_address),
-            balance_in_wei
-        ).build_transaction(await self.client.prepare_transaction())
+            self.logger_msg(*self.client.acc_info, msg=f'Transfer {balance:.2f} ZRO to {dep_address[:10]}...')
 
-        return await self.client.send_transaction(transfer_tx)
+            transfer_tx = await zro_contract.functions.transfer(
+                self.client.w3.to_checksum_address(dep_address),
+                balance_in_wei
+            ).build_transaction(await self.client.prepare_transaction())
+
+            return await self.client.send_transaction(transfer_tx)
+        else:
+            self.logger_msg(*self.client.acc_info, msg=f'Zero ZRO amount!', type_msg='warning')
 
     @helper
     async def swap_zk(self):
