@@ -4,7 +4,7 @@ import json
 
 from eth_account.messages import encode_structured_data
 
-from config import AETHIR_ABI, TOKENS_PER_CHAIN, TAIKO_ABI, ERC20_ABI, ZK_ABI
+from config import AETHIR_ABI, TOKENS_PER_CHAIN, TAIKO_ABI, ERC20_ABI, ZK_ABI, ZRO_ABI
 from modules import Logger, Aggregator, Client
 from settings import MEMCOIN_AMOUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY, \
     NODE_TRYING_WITHOUT_REF, TWO_CAPTCHA_API_KEY
@@ -514,6 +514,65 @@ class Custom(Logger, Aggregator):
 
         return await self.client.send_transaction(transaction)
 
+    @helper
+    async def full_claim_zro(self):
+        url = "https://api.zknation.io/claim"
+
+        claim_addresses = "0x66Fd4FC8FA52c9bec2AbA368047A0b27e24ecfe4"
+
+        amount_in_wei, merkle_index, merkle_proof, airdrop_id, contract_address = await self.get_zk_drop_info()
+
+        self.logger_msg(*self.client.acc_info, msg=f'Claim {amount_in_wei / 10 ** 18:.2f} ZRO')
+
+        # timestamp = int(time.time()) + 604800
+        #
+        # claim_signature = await self.get_claim_zk_signature(amount_in_wei, merkle_index, contract_address, timestamp)
+        # delegate_signature = await self.get_delegate_zk_signature(timestamp)
+        # recaptcha_token = await self.get_recaptcha_token()
+        #
+        # headers = {
+        #     "accept": "application/json",
+        #     "accept-language": "ru,en;q=0.9,en-GB;q=0.8,en-US;q=0.7",
+        #     "content-type": "application/json",
+        #     "priority": "u=1, i",
+        #     "Recaptcha": recaptcha_token,
+        #     "sec-ch-ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"123\", \"Microsoft Edge\";v=\"123\"",
+        #     "sec-ch-ua-mobile": "?0",
+        #     "sec-ch-ua-platform": "\"Windows\"",
+        #     "sec-fetch-dest": "empty",
+        #     "sec-fetch-mode": "cors",
+        #     "sec-fetch-site": "same-site",
+        #     "x-api-key": "46001d8f026d4a5bb85b33530120cd38",
+        #     "referrer": "https://claim.zknation.io/",
+        #     "referrerPolicy": "strict-origin-when-cross-origin",
+        #     "method": "POST",
+        #     "mode": "cors",
+        #     "credentials": "omit"
+        # }
+        #
+        # payload = {
+        #     "airdropId": airdrop_id,
+        #     "claimant": f"{self.client.address}",
+        #     "claimSignature": f"{claim_signature}",
+        #     "claimSignatureExpiry": timestamp,
+        #     "nonce": "0",
+        #     "delegateSignature": f"{delegate_signature}",
+        #     "delegateSignatureExpiry": timestamp,
+        #     "delegatee": f"{self.client.address}",
+        #     "delegateNonce": "0"
+        # }
+        #
+        # response = await self.make_request('POST', url=url, json=payload, headers=headers)
+
+        claim_contract = self.client.get_contract(claim_addresses, ZRO_ABI)
+
+        transaction = await claim_contract.functions.claim(
+            merkle_index,
+            amount_in_wei,
+            merkle_proof
+        ).build_transaction(await self.client.prepare_transaction())
+
+        return await self.client.send_transaction(transaction)
 
     @helper
     async def transfer_zk(self):
@@ -528,6 +587,25 @@ class Custom(Logger, Aggregator):
         self.logger_msg(*self.client.acc_info, msg=f'Transfer {balance:.2f} ZK to {dep_address[:10]}...')
 
         transfer_tx = await zk_contract.functions.transfer(
+            self.client.w3.to_checksum_address(dep_address),
+            balance_in_wei
+        ).build_transaction(await self.client.prepare_transaction())
+
+        return await self.client.send_transaction(transfer_tx)
+
+    @helper
+    async def transfer_zro(self):
+
+        zro_contract = self.client.get_contract('0x6985884C4392D348587B19cb9eAAf157F13271cd', ERC20_ABI)
+
+        dep_address = get_wallet_for_deposit(self)
+
+        _, balance, _ = await self.client.get_token_balance('ZRO', omnicheck=True)
+        balance_in_wei = self.client.to_wei(balance)
+
+        self.logger_msg(*self.client.acc_info, msg=f'Transfer {balance:.2f} ZRO to {dep_address[:10]}...')
+
+        transfer_tx = await zro_contract.functions.transfer(
             self.client.w3.to_checksum_address(dep_address),
             balance_in_wei
         ).build_transaction(await self.client.prepare_transaction())
