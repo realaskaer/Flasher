@@ -2,18 +2,18 @@
 --------------------------------------------------OKX CONTROL-----------------------------------------------------------
     Выберите сети/суммы для вывода и ввода с OKX. Не забудьте вставить API ключи снизу.
 
-    1 - ETH-ERC20              9  - CELO-Celo           17 - KLAY-Klaytn        25 - USDT-Avalanche
-    2 - ETH-Arbitrum One       10 - ONE-Harmony         18 - FTM-Fantom         26 - USDT-Arbitrum One
-    3 - ETH-zkSync Lite        11 - GLMR-Moonbeam       19 - AVAX-Avalanche     27 - USDC-ERC20   
-    4 - ETH-Optimism           12 - MOVR-Moonriver      20 - ASTR-Astar         28 - USDC-Optimism
-    5 - ETH-Starknet           13 - METIS-Metis         21 - BNB-BSC            29 - USDC-Avalanche
-    6 - ETH-zkSync Era         14 - CORE-CORE           22 - USDT-ERC20         30 - USDC-Arbitrum One
-    7 - ETH-Linea              15 - CFX-Conflux         23 - USDT-Polygon       31 - USDT-Polygon
-    8 - ETH-Base               16 - ZEN-Horizen         24 - USDT-Optimism      32 - USDC-Optimist (Bridged)
+    1 - ETH-ERC20                  13 - METIS-Metis         25 - USDC-Arbitrum One
+    2 - ETH-Arbitrum One           14 - CORE-CORE           26 - USDC-Avalanche C-Chain
+    3 - ETH-Optimism               15 - CFX-CFX_EVM         27 - USDC-Optimism
+    4 - ETH-zkSync Era             16 - KLAY-Klaytn         28 - USDC-Polygon
+    5 - ETH-Linea                  17 - FTM-Fantom          29 - USDC-Optimism (Bridged)
+    6 - ETH-Base                   18 - MATIC-Polygon       30 - USDC-Polygon (Bridged)
+    7 - AVAX-Avalanche C-Chain     19 - USDT-Arbitrum One   31 - USDC-BSC
+    8 - BNB-BSC                    20 - USDT-Avalanche      32 - USDC-ERC20
 
 ------------------------------------------------------------------------------------------------------------------------
 """
-OKX_WITHDRAW_NETWORK = 2                 # Сеть вывода из OKX
+OKX_WITHDRAW_NETWORK = 6                 # Сеть вывода из OKX
 OKX_WITHDRAW_AMOUNT = (0.002, 0.003)   # (минимальная, максимальная) сумма для вывода из OKX
 
 OKX_DEPOSIT_NETWORK = 5                  # Сеть из которой планируется пополнение OKX
@@ -91,7 +91,7 @@ ACROSS_DEPOSIT_AMOUNT = (0.002, 0.002)    # (минимум, максимум) E
 """
 GLOBAL_NETWORK = 1            # Глобальная сеть работы в софте
 ACCOUNTS_IN_STREAM = 1         # Количество аккаунтов в потоке, софт всегда запускается в многопоточном режиме
-WALLETS_TO_WORK = 0           # Аккаунты к запуску. Примеры: 0 / 3 / 3, 20 / [3, 20]
+WALLETS_TO_WORK = 3           # Аккаунты к запуску. Примеры: 0 / 3 / 3, 20 / [3, 20]
 NUMBER_OF_STREAM = 1           # Не рабочая настройка,
 
 '-------------------------------------------------GAS CONTROL----------------------------------------------------------'
@@ -147,7 +147,7 @@ TWO_CAPTCHA_API_KEY = ""
     
 """
 
-ZRO_DST_CHAIN = 1
+ZRO_DST_CHAIN = 2
 
 # НЕАТУАЛЬНО НЕАТУАЛЬНО НЕАТУАЛЬНО НЕАТУАЛЬНО НЕАТУАЛЬНО НЕАТУАЛЬНО НЕАТУАЛЬНО НЕАТУАЛЬНО НЕАТУАЛЬНО НЕАТУАЛЬНО
 # в софте всего 9 тиров нод
@@ -210,7 +210,7 @@ MEMCOIN_AMOUNT = 0.004  # сумма в ETH для MEMCOIN_MODE_CODE = 1
 """
 
 CLASSIC_ROUTES_MODULES_USING = [
-     #['okx_withdraw'],
+     ['okx_withdraw'],
      ['claim_zro'],
      ['transfer_zro'],
 ]

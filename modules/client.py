@@ -87,7 +87,6 @@ class Client(Logger):
         amount = await self.get_smart_amount(deposit_info)
         return source_chain, destination_chain, amount, dst_chains
 
-
     def to_wei(self, number: int | float | str, decimals: int = 18) -> int:
 
         unit_name = {
@@ -96,6 +95,7 @@ class Client(Logger):
         }[decimals]
 
         return self.w3.to_wei(number=number, unit=unit_name)
+
     async def new_client(self, chain_id):
         from functions import get_network_by_chain_id
         new_client = Client(self.account_name, self.private_key,
@@ -103,7 +103,8 @@ class Client(Logger):
         return new_client
 
     async def wait_for_receiving(self, chain_id:int, old_balance:int = 0, token_name:str = 'ETH', sleep_time:int = 60,
-                                 timeout: int = 1200, check_balance_on_dst:bool = False):
+                                 timeout: int = 1200, check_balance_on_dst:bool = False, omnicheck:bool = False,
+                                 ):
         client = await self.new_client(chain_id)
 
         try:

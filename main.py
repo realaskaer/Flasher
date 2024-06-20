@@ -21,8 +21,8 @@ def main():
 
     create_cex_withdrawal_list()
     print()
-    cprint('Start checking all proxies...', 'light_cyan')
-    print()
+    #cprint('Start checking all proxies...', 'light_cyan')
+    #print()
 
     while True:
         answer = select(

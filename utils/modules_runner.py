@@ -1,6 +1,7 @@
 import json
 import random
 import asyncio
+import traceback
 
 from aiohttp import ClientSession
 
@@ -141,6 +142,7 @@ class Runner(Logger):
                 try:
                     result = await module_func(*module_input_data)
                 except Exception as error:
+                    traceback.print_exc()
                     info = f"Module name: {module_info[module_func][2]} | Error {error}"
                     self.logger_msg(
                         account_name, None, f"Module crashed during the route: {info}", type_msg='error')
