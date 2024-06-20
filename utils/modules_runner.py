@@ -208,8 +208,5 @@ class Runner(Logger):
         self.logger_msg(None, None, f"All wallets completed their tasks!\n", 'success')
 
     async def run_accounts(self):
-        generator = RouteGenerator()
-        generator.classic_routes_json_save()
-
         clean_gwei_file()
         await self.run_parallel()

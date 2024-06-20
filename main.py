@@ -29,6 +29,7 @@ def main():
             'What do you want to do?',
             choices=[
                 Choice("🚀 Claim and Transfer ZRO", 'classic_routes_run'),
+                Choice("📄 Generate classic-route for each wallet", 'classic_routes_gen'),
                 Choice('❌ Exit', "exit")
             ],
             qmark='🛠️',
@@ -41,6 +42,9 @@ def main():
             print()
         elif answer == 'exit':
             sys.exit()
+        elif answer == 'classic_routes_gen':
+            generator = RouteGenerator()
+            generator.classic_routes_json_save()
         else:
             print()
             answer()
