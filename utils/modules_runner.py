@@ -7,7 +7,7 @@ from utils.networks import EthereumRPC
 from web3 import AsyncWeb3, AsyncHTTPProvider
 from functions import get_network_by_chain_id
 from utils.tools import clean_gwei_file
-from utils.route_generator import AVAILABLE_MODULES_INFO, get_func_by_name
+from utils.route_generator import AVAILABLE_MODULES_INFO, get_func_by_name, RouteGenerator
 from config import ACCOUNT_NAMES, PRIVATE_KEYS_EVM, PRIVATE_KEYS, PROXIES
 from settings import (USE_PROXY, WALLETS_TO_WORK, GLOBAL_NETWORK,
                       ACCOUNTS_IN_STREAM, SLEEP_TIME_STREAM, SLEEP_TIME, SLEEP_MODE)
@@ -175,5 +175,8 @@ class Runner(Logger):
         self.logger_msg(None, None, f"All wallets completed their tasks!\n", 'success')
 
     async def run_accounts(self):
+        generator = RouteGenerator()
+        generator.classic_routes_json_save()
+
         clean_gwei_file()
         await self.run_parallel()

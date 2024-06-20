@@ -153,7 +153,7 @@ def drop_date():
     return future_date.strftime("%Y.%m.%d")
 
 
-def create_okx_withdrawal_list():
+def create_cex_withdrawal_list():
     from config import ACCOUNT_NAMES, OKX_WALLETS
     okx_data = {}
 
@@ -162,8 +162,8 @@ def create_okx_withdrawal_list():
             for account_name, okx_wallet in zip(ACCOUNT_NAMES, OKX_WALLETS):
                 okx_data[account_name] = okx_wallet
             json.dump(okx_data, file, indent=4)
-        cprint('✅ Successfully added and saved OKX wallets data', 'light_blue')
-        cprint('⚠️ Check all OKX deposit wallets by yourself to avoid problems', 'light_yellow', attrs=["blink"])
+        cprint('✅ Successfully added and saved CEX wallets data', 'light_blue')
+        cprint('⚠️ Check all CEX deposit wallets by yourself to avoid problems', 'light_yellow', attrs=["blink"])
     else:
         cprint('❌ Put your wallets into files, before running this function', 'light_red')
 
