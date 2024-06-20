@@ -572,11 +572,11 @@ class Custom(Logger, Aggregator):
 
                 scr_chain_fee_contract = new_client.get_contract(scr_chain_fee_claimer, CLAIM_ABI)
 
-                scr_chain_claim_fee = (await scr_chain_fee_contract.functions.quoteClaim(
+                scr_chain_claim_fee = int((await scr_chain_fee_contract.functions.quoteClaim(
                     self.client.address,
                     amount_to_claim,
                     ext_data
-                ).call() * 1.05)[0]
+                ).call())[0] * 1.05)
 
                 value = donate_amount + claim_bridge_fee + scr_chain_claim_fee
 
