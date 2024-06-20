@@ -562,7 +562,7 @@ class Custom(Logger, Aggregator):
                 claim_bridge_fee = int((await quoter_addresses.functions.quoteClaimCallback(
                     eid,
                     amount_to_claim,
-                ).call())[0] * 1.1)
+                ).call())[0] * 1.2)
 
                 ext_data = '0x000301002101' + encode(['uint256'], [claim_bridge_fee]).hex()
 
@@ -576,7 +576,7 @@ class Custom(Logger, Aggregator):
                     self.client.address,
                     amount_to_claim,
                     ext_data
-                ).call())[0] * 1.1)
+                ).call())[0] * 1.2)
 
                 value = donate_amount + claim_bridge_fee + scr_chain_claim_fee
 
