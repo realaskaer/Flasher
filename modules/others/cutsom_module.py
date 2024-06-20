@@ -1,13 +1,12 @@
 import asyncio
 import copy
 import json
-import time
 
 from eth_account.messages import encode_structured_data
 
-from config import AETHIR_ABI, CYBERV_ABI, TOKENS_PER_CHAIN, TAIKO_ABI, ERC20_ABI, ZK_ABI
+from config import AETHIR_ABI, TOKENS_PER_CHAIN, TAIKO_ABI, ERC20_ABI, ZK_ABI
 from modules import Logger, Aggregator, Client
-from settings import MEMCOIN_AMOUNT, CYBERV_NFT_COUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY, \
+from settings import MEMCOIN_AMOUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY, \
     NODE_TRYING_WITHOUT_REF, TWO_CAPTCHA_API_KEY
 from utils.tools import helper, get_wallet_for_deposit
 
