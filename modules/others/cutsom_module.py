@@ -4,10 +4,11 @@ import json
 
 from eth_account.messages import encode_structured_data
 
-from config import AETHIR_ABI, TOKENS_PER_CHAIN, TAIKO_ABI, ERC20_ABI, ZK_ABI, ZRO_ABI
+from config import AETHIR_ABI, TOKENS_PER_CHAIN, TAIKO_ABI, ERC20_ABI, ZK_ABI, CLAIM_ABI
 from modules import Logger, Aggregator, Client
 from settings import MEMCOIN_AMOUNT, NODE_COUNT, NODE_TIER_MAX, NODE_TIER_BUY, \
-    NODE_TRYING_WITHOUT_REF, TWO_CAPTCHA_API_KEY
+    NODE_TRYING_WITHOUT_REF, TWO_CAPTCHA_API_KEY, ZRO_DST_CHAIN
+from eth_abi import encode
 from utils.tools import helper, get_wallet_for_deposit
 
 
@@ -518,70 +519,78 @@ class Custom(Logger, Aggregator):
     async def full_claim_zro(self):
         url = f"https://www.layerzero.foundation/api/proof/{self.client.address}"
 
-        claim_addresses = "0xB09F16F625B363875e39ADa56C03682088471523"
+        claim_addresses = {
+            1: "0xB09F16F625B363875e39ADa56C03682088471523",
+            2: "0xf19ccb20726Eab44754A59eFC4Ad331e3bF4F248",
+            3: "0x3Ef4abDb646976c096DF532377EFdfE0E6391ac3",
+            4: "0x9c26831a80Ef7Fb60cA940EB9AA22023476B3468",
+        }[ZRO_DST_CHAIN]
 
         response = await self.make_request(url=url)
 
         if response['amount']:
             amount_to_claim = int(response['amount'])
+            donate_amount = self.client.to_wei((round(amount_to_claim / 10 ** 18) + 1) * 0.00003)
+            value = donate_amount
+
             merkle_proof = response['proof'].split('|')
+            ext_data = '0x'
 
             self.logger_msg(*self.client.acc_info, msg=f'Claim {amount_to_claim / 10 ** 18:.2f} ZRO')
 
-            claim_contract = self.client.get_contract(claim_addresses, ZRO_ABI)
+            claim_contract = self.client.get_contract(claim_addresses, CLAIM_ABI)
 
-            donate_amount = int((round(amount_to_claim / 10 ** 18) + 1) * 0.00003 * 10 ** 18)
+            if ZRO_DST_CHAIN != 1:
+                from functions import OptimismRPC, BaseRPC, BSC_RPC
+
+                client_rpc, rpc_id, eid = {
+                    2: (BaseRPC, 3, 30184),
+                    3: (OptimismRPC, 7, 30111),
+                    4: (BSC_RPC, 15, 30102),
+                }[ZRO_DST_CHAIN]
+
+                quoter_addresses = self.client.get_contract('0xd6b6a6701303B5Ea36fa0eDf7389b562d8F894DB', CLAIM_ABI)
+
+                new_client: Client = await self.client.new_client(rpc_id)
+
+                claim_bridge_fee = int((await quoter_addresses.functions.quoteClaimCallback(
+                    eid,
+                    amount_to_claim,
+                ).call())[0] * 1.05)
+
+                ext_data = '0x000301002101' + encode(['uint256'], [claim_bridge_fee]).hex()
+
+                claim_contract = new_client.get_contract(claim_addresses, CLAIM_ABI)
+
+                scr_chain_fee_claimer = await claim_contract.functions.claimContract().call()
+
+                scr_chain_fee_contract = new_client.get_contract(scr_chain_fee_claimer, CLAIM_ABI)
+
+                scr_chain_claim_fee = (await scr_chain_fee_contract.functions.quoteClaim(
+                    self.client.address,
+                    amount_to_claim,
+                    ext_data
+                ).call() * 1.05)[0]
+
+                value += claim_bridge_fee + scr_chain_claim_fee  # не ебу что за прибавка
+
+            else:
+                new_client = self.client
 
             transaction = await claim_contract.functions.donateAndClaim(
                 2,
                 donate_amount,
                 amount_to_claim,
                 merkle_proof,
-                self.client.address,
-                '0x'
-            ).build_transaction(await self.client.prepare_transaction(value=donate_amount))
+                new_client.address,
+                ext_data
+            ).build_transaction(await new_client.prepare_transaction(value=value))
 
-            return await self.client.send_transaction(transaction)
+            result = await new_client.send_transaction(transaction)
 
-        # timestamp = int(time.time()) + 604800
-        #
-        # claim_signature = await self.get_claim_zk_signature(amount_in_wei, merkle_index, contract_address, timestamp)
-        # delegate_signature = await self.get_delegate_zk_signature(timestamp)
-        # recaptcha_token = await self.get_recaptcha_token()
-        #
-        # headers = {
-        #     "accept": "application/json",
-        #     "accept-language": "ru,en;q=0.9,en-GB;q=0.8,en-US;q=0.7",
-        #     "content-type": "application/json",
-        #     "priority": "u=1, i",
-        #     "Recaptcha": recaptcha_token,
-        #     "sec-ch-ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"123\", \"Microsoft Edge\";v=\"123\"",
-        #     "sec-ch-ua-mobile": "?0",
-        #     "sec-ch-ua-platform": "\"Windows\"",
-        #     "sec-fetch-dest": "empty",
-        #     "sec-fetch-mode": "cors",
-        #     "sec-fetch-site": "same-site",
-        #     "x-api-key": "46001d8f026d4a5bb85b33530120cd38",
-        #     "referrer": "https://claim.zknation.io/",
-        #     "referrerPolicy": "strict-origin-when-cross-origin",
-        #     "method": "POST",
-        #     "mode": "cors",
-        #     "credentials": "omit"
-        # }
-        #
-        # payload = {
-        #     "airdropId": airdrop_id,
-        #     "claimant": f"{self.client.address}",
-        #     "claimSignature": f"{claim_signature}",
-        #     "claimSignatureExpiry": timestamp,
-        #     "nonce": "0",
-        #     "delegateSignature": f"{delegate_signature}",
-        #     "delegateSignatureExpiry": timestamp,
-        #     "delegatee": f"{self.client.address}",
-        #     "delegateNonce": "0"
-        # }
-        #
-        # response = await self.make_request('POST', url=url, json=payload, headers=headers)
+            await new_client.session.close()
+
+            return result
 
     @helper
     async def transfer_zk(self):

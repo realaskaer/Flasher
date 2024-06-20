@@ -1,7 +1,7 @@
 from modules import *
 from utils.networks import *
 from config import OKX_WRAPED_ID
-from settings import (OKX_DEPOSIT_NETWORK)
+from settings import (OKX_DEPOSIT_NETWORK, ZRO_DST_CHAIN)
 
 
 def get_client(account_number, private_key, network, proxy) -> Client:
@@ -186,7 +186,12 @@ async def claim_zro(account_number, private_key, _, proxy):
 
 
 async def transfer_zro(account_number, private_key, _, proxy):
-    network = ArbitrumRPC
+    network = {
+        1: ArbitrumRPC,
+        2: BaseRPC,
+        3: OptimismRPC,
+        4: BSC_RPC,
+    }[ZRO_DST_CHAIN]
     worker = Custom(get_client(account_number, private_key, network, proxy))
     return await worker.transfer_zro()
 
