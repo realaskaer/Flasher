@@ -526,9 +526,9 @@ class Custom(Logger, Aggregator):
             4: "0x9c26831a80Ef7Fb60cA940EB9AA22023476B3468",
         }[ZRO_DST_CHAIN]
 
-        response = await self.make_request(url=url)
+        response = await self.make_request(url=url, zro_claim=True)
 
-        if response['amount']:
+        if response:
             amount_to_claim = int(response['amount'])
             merkle_proof = response['proof'].split('|')
             ext_data = '0x'
@@ -612,6 +612,8 @@ class Custom(Logger, Aggregator):
             await new_client.session.close()
 
             return result
+        else:
+            self.logger_msg(*self.client.acc_info, msg=f'You are not eligible to claim ZRO', type_msg='warning')
 
     @helper
     async def transfer_zk(self):

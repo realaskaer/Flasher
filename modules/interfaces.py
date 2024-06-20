@@ -125,12 +125,14 @@ class Aggregator(ABC):
         self.client = client
 
     async def make_request(self, method:str = 'GET', url:str = None, headers:dict = None, params: dict = None,
-                           data:str = None, json:dict = None):
+                           data:str = None, json:dict = None, zro_claim:bool = False):
 
         headers = (headers or {}) | {'User-Agent': get_user_agent()}
         async with self.client.session.request(method=method, url=url, headers=headers, data=data,
-                                               params=params, json=json) as response:
+                                            params=params, json=json) as response:
             try:
+                if zro_claim and 'Record not found' in (await response.text()):
+                    return False
                 data = await response.json()
                 if response.status in [200, 201]:
                     return data
