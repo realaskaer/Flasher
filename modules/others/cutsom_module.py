@@ -555,7 +555,7 @@ class Custom(Logger, Aggregator):
                     4: (BSC_RPC, 15, 30102, 21),
                 }[ZRO_DST_CHAIN]
 
-                donate_amount = (await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[0]
+                donate_amount = (await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[-1]
 
                 new_client: Client = await self.client.new_client(rpc_id)
 
