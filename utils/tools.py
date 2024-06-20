@@ -190,6 +190,7 @@ def helper(func):
                 try:
                     return await func(self, *args, **kwargs)
                 except Exception as error:
+                    traceback.print_exc()
                     self.logger_msg(
                         self.client.account_name,
                         None, msg=f"{error} | Try[{attempts + 1}/{MAXIMUM_RETRY + 1}]", type_msg='error'

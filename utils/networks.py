@@ -73,7 +73,7 @@ ScrollRPC = Network(
 ArbitrumRPC = Network(
     name='Arbitrum',
     rpc=[
-        'https://rpc.ankr.com/arbitrum/',
+        'https://arb-mainnet.g.alchemy.com/v2/Rv36D9PbzEPbtyTALu3oxyzmi-DB96b7',
     ],
     chain_id=42161,
     eip1559_support=False,

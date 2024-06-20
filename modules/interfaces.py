@@ -12,6 +12,50 @@ from settings import (LAYERSWAP_API_KEY, OKX_API_KEY, OKX_API_PASSPHRAS,
 from utils.networks import StarknetRPC
 
 
+class PriceImpactException(Exception):
+    pass
+
+
+class BlockchainException(Exception):
+    pass
+
+
+class BlockchainExceptionWithoutRetry(Exception):
+    pass
+
+
+class SoftwareException(Exception):
+    pass
+
+
+class CriticalException(Exception):
+    pass
+
+
+class SoftwareExceptionWithoutRetry(Exception):
+    pass
+
+
+class SoftwareExceptionWithRetries(Exception):
+    pass
+
+
+class SoftwareExceptionHandled(Exception):
+    pass
+
+
+class InsufficientBalanceException(Exception):
+    pass
+
+
+class BridgeExceptionWithoutRetry(Exception):
+    pass
+
+
+class DepositExceptionWithoutRetry(Exception):
+    pass
+
+
 def get_user_agent():
     random_version = f"{uniform(520, 540):.2f}"
     return (f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/{random_version} (KHTML, like Gecko)'

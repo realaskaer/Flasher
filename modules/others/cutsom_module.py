@@ -530,26 +530,32 @@ class Custom(Logger, Aggregator):
 
         if response['amount']:
             amount_to_claim = int(response['amount'])
-            donate_amount = self.client.to_wei((round(amount_to_claim / 10 ** 18) + 1) * 0.00003)
-            value = donate_amount
-
             merkle_proof = response['proof'].split('|')
             ext_data = '0x'
 
             self.logger_msg(*self.client.acc_info, msg=f'Claim {amount_to_claim / 10 ** 18:.2f} ZRO')
 
             claim_contract = self.client.get_contract(claim_addresses, CLAIM_ABI)
+            quoter_addresses = self.client.get_contract('0xd6b6a6701303B5Ea36fa0eDf7389b562d8F894DB', CLAIM_ABI)
+
+            claim_result = await quoter_addresses.functions.zroClaimed(
+                self.client.address
+            ).call()
+
+            if claim_result > 0:
+                self.logger_msg(*self.client.acc_info, msg=f'Already claimed ZRO', type_msg='warning')
+                return True
 
             if ZRO_DST_CHAIN != 1:
                 from functions import OptimismRPC, BaseRPC, BSC_RPC
 
-                client_rpc, rpc_id, eid = {
-                    2: (BaseRPC, 3, 30184),
-                    3: (OptimismRPC, 7, 30111),
-                    4: (BSC_RPC, 15, 30102),
+                client_rpc, rpc_id, eid, withdraw_network = {
+                    2: (BaseRPC, 3, 30184, 8),
+                    3: (OptimismRPC, 7, 30111, 4),
+                    4: (BSC_RPC, 15, 30102, 21),
                 }[ZRO_DST_CHAIN]
 
-                quoter_addresses = self.client.get_contract('0xd6b6a6701303B5Ea36fa0eDf7389b562d8F894DB', CLAIM_ABI)
+                donate_amount = (await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[0]
 
                 new_client: Client = await self.client.new_client(rpc_id)
 
@@ -572,10 +578,23 @@ class Custom(Logger, Aggregator):
                     ext_data
                 ).call() * 1.05)[0]
 
-                value += claim_bridge_fee + scr_chain_claim_fee  # не ебу что за прибавка
+                value = donate_amount + claim_bridge_fee + scr_chain_claim_fee
 
             else:
                 new_client = self.client
+                withdraw_network = 2
+                donate_amount = (await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[-1]
+                value = donate_amount
+
+            balance_in_wei, _, _ = await new_client.get_token_balance()
+
+            if balance_in_wei < (value * 1.2):
+                from functions import okx_withdraw
+
+                await okx_withdraw(
+                    new_client.account_name, new_client.private_key, new_client.network, new_client.proxy_init,
+                    withdraw_data=(withdraw_network, (value / 10 ** 18, int(value / 10 ** 18 * 1.1)))
+                )
 
             transaction = await claim_contract.functions.donateAndClaim(
                 2,
@@ -621,7 +640,7 @@ class Custom(Logger, Aggregator):
         _, balance, _ = await self.client.get_token_balance('ZRO', omnicheck=True)
         balance_in_wei = self.client.to_wei(balance)
 
-        if balance_in_wei != 0.0:
+        if balance > 0:
 
             self.logger_msg(*self.client.acc_info, msg=f'Transfer {balance:.2f} ZRO to {dep_address[:10]}...')
 
