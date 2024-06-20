@@ -269,6 +269,7 @@ TOKENS_PER_CHAIN2 = {
     'Arbitrum': {
         'USDC': '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
         'USDT': '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+        'ZRO': '0x6985884C4392D348587B19cb9eAAf157F13271cd',
         'ETH': '',
     },
     'Optimism':{
