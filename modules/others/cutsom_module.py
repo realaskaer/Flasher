@@ -589,6 +589,8 @@ class Custom(Logger, Aggregator):
             balance_in_wei, _, _ = await new_client.get_token_balance()
 
             if balance_in_wei < (value * 1.2):
+                self.logger_msg(*self.client.acc_info, msg=f'Not enough {new_client.token} for claim, start withdraw')
+
                 from functions import okx_withdraw
 
                 await okx_withdraw(
