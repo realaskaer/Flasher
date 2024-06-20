@@ -2,6 +2,8 @@ import json
 import random
 import asyncio
 
+from aiohttp import ClientSession
+
 from modules import Logger
 from utils.networks import EthereumRPC
 from web3 import AsyncWeb3, AsyncHTTPProvider
@@ -10,7 +12,8 @@ from utils.tools import clean_gwei_file
 from utils.route_generator import AVAILABLE_MODULES_INFO, get_func_by_name, RouteGenerator
 from config import ACCOUNT_NAMES, PRIVATE_KEYS_EVM, PRIVATE_KEYS, PROXIES
 from settings import (USE_PROXY, WALLETS_TO_WORK, GLOBAL_NETWORK,
-                      ACCOUNTS_IN_STREAM, SLEEP_TIME_STREAM, SLEEP_TIME, SLEEP_MODE)
+                      ACCOUNTS_IN_STREAM, SLEEP_TIME_STREAM, SLEEP_TIME, SLEEP_MODE, MOBILE_PROXY_URL_CHANGER,
+                      MOBILE_PROXY)
 
 BRIDGE_NAMES = ['bridge_rhino', 'bridge_layerswap', 'bridge_orbiter', 'bridge_across',
                 'bridge_native', 'withdraw_native_bridge']
@@ -60,6 +63,15 @@ class Runner(Logger):
                 duration = random.randint(*SLEEP_TIME)
             self.logger_msg(account_name, None, f"💤 Sleeping for {duration} seconds\n")
             await asyncio.sleep(duration)
+
+    @staticmethod
+    async def make_request(method: str = 'GET', url: str = None, headers: dict = None):
+
+        async with ClientSession() as session:
+            async with session.request(method=method, url=url, headers=headers) as response:
+                if response.status == 200:
+                    return True
+                return False
 
     def update_step(self, account_name, step):
         wallets = self.load_routes()
@@ -147,6 +159,22 @@ class Runner(Logger):
         except Exception as error:
             self.logger_msg(account_name, None, f"Error during the route! Error: {error}\n", 'error')
 
+    async def change_ip_proxy(self):
+        for index, proxy_url in enumerate(MOBILE_PROXY_URL_CHANGER, 1):
+            while True:
+                try:
+                    self.logger_msg(None, None, f'Trying to change IP №{index} address\n', 'info')
+
+                    await self.make_request(url=proxy_url)
+
+                    self.logger_msg(None, None, f'IP №{index} address changed!\n', 'success')
+                    await asyncio.sleep(5)
+                    break
+
+                except Exception as error:
+                    self.logger_msg(None, None, f'Bad URL for change IP №{index}. Error: {error}', 'error')
+                    await asyncio.sleep(15)
+
     async def run_parallel(self):
         selected_wallets = list(self.get_wallets())
         num_accounts = len(selected_wallets)
@@ -169,6 +197,9 @@ class Runner(Logger):
                         self.get_proxy_for_account(account_name), index=index)))
 
             await asyncio.gather(*tasks, return_exceptions=True)
+
+            if MOBILE_PROXY:
+                await self.change_ip_proxy()
 
             self.logger_msg(None, None, f"Wallets in stream completed their tasks, launching next stream\n", 'success')
 
