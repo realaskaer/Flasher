@@ -790,13 +790,19 @@ class Custom(Logger, Aggregator):
             new_chains.append(converted_chains[chain])
             tokens.append('ZRO')
 
-        client, chain_index, balance, _, balance_data = await self.balance_searcher(
-            chains=new_chains, tokens=tokens
-        )
+        result = False
+        try:
+            client, chain_index, balance, _, balance_data = await self.balance_searcher(
+                chains=new_chains, tokens=tokens, raise_handle=True
+            )
 
-        result = await transfer_zro(client.account_name, client.private_key, client.network, client.proxy_init)
+            result = await transfer_zro(client.account_name, client.private_key, client.network, client.proxy_init)
 
-        await client.session.close()
+            await client.session.close()
+        except SoftwareExceptionHandled:
+            self.logger_msg(
+                *self.client.acc_info, msg=f'Zero ZRO amount in all networks!'
+            )
 
         return result
 
