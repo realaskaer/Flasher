@@ -1,7 +1,6 @@
 from modules import *
 from utils.networks import *
-from config import OKX_WRAPED_ID
-from settings import (OKX_DEPOSIT_NETWORK, ZRO_DST_CHAIN)
+from settings import ZRO_DST_CHAIN
 
 
 def get_client(account_number, private_key, network, proxy) -> Client:
@@ -68,68 +67,6 @@ def get_key_by_id_from(args, chain_from_id):
     return current_key
 
 
-async def swap_rango(account_number, private_key, network, proxy, **kwargs):
-    worker = Rango(get_client(account_number, private_key, network, proxy))
-    return await worker.swap(**kwargs)
-
-
-async def okx_withdraw(account_number, private_key, network, proxy, *args, **kwargs):
-    worker = OKX(get_client(account_number, private_key, network, proxy))
-    return await worker.withdraw(*args, **kwargs)
-
-
-async def okx_deposit(account_number, private_key, _, proxy):
-    network = get_network_by_chain_id(OKX_WRAPED_ID[OKX_DEPOSIT_NETWORK])
-
-    worker = OKX(get_client(account_number, private_key, network, proxy))
-    return await worker.deposit()
-
-
-async def okx_collect_from_sub(account_number, private_key, network, proxy):
-    worker = OKX(get_client(account_number, private_key, network, proxy))
-    return await worker.collect_from_sub()
-
-
-async def swap_jediswap(client, *args, **kwargs):
-    worker = JediSwap(client)
-    return await worker.swap(*args, **kwargs)
-
-
-async def check_pool_jediswap(account_number, private_key, network, proxy, *args, **kwargs):
-    worker = JediSwap(get_client(account_number, private_key, network, proxy))
-    return await worker.get_min_amount_out(*args, **kwargs)
-
-
-async def swap_avnu(account_number, private_key, network, proxy, **kwargs):
-    worker = AVNU(get_client(account_number, private_key, network, proxy))
-    return await worker.swap(**kwargs)
-
-
-async def swap_thruster(current_client, **kwargs):
-    worker = Thruster(current_client)
-    return await worker.swap(**kwargs)
-
-
-async def swap_10kswap(client):
-    worker = TenkSwap(client)
-    return await worker.swap()
-
-
-async def swap_sithswap(account_number, private_key, network, proxy):
-    worker = SithSwap(get_client(account_number, private_key, network, proxy))
-    return await worker.swap()
-
-
-async def swap_myswap(account_number, private_key, network, proxy):
-    worker = MySwap(get_client(account_number, private_key, network, proxy))
-    return await worker.swap()
-
-
-async def swap_protoss(account_number, private_key, network, proxy):
-    worker = Protoss(get_client(account_number, private_key, network, proxy))
-    return await worker.swap()
-
-
 async def swap_syncswap(current_client, **kwargs):
     worker = SyncSwap(current_client)
     return await worker.swap(**kwargs)
@@ -138,22 +75,6 @@ async def swap_syncswap(current_client, **kwargs):
 async def swap_zk(current_client, **kwargs):
     worker = Custom(current_client)
     return await worker.swap_zk(**kwargs)
-
-
-async def buy_memcoin_thruster(account_number, private_key, network, proxy):
-    worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.buy_memecoin_thruster()
-
-
-async def sell_memcoin_thruster(account_number, private_key, network, proxy):
-    worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.sell_memecoin_thruster()
-
-
-async def sell_shitcoin_jediswap(account_number, private_key, network, proxy):
-
-    worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.sell_token_jediswap()
 
 
 async def claim_taiko(account_number, private_key, _, proxy):
@@ -180,19 +101,46 @@ async def transfer_zk(account_number, private_key, _, proxy):
     return await worker.transfer_zk()
 
 
-async def claim_zro(account_number, private_key, _, proxy):
+async def smart_claim_zro(account_number, private_key, network, proxy):
+    worker = Custom(get_client(account_number, private_key, network, proxy))
+    return await worker.smart_claim_zro()
+
+
+async def smart_transfer_zro(account_number, private_key, network, proxy):
+    worker = Custom(get_client(account_number, private_key, network, proxy))
+    return await worker.smart_transfer_zro()
+
+
+async def claim_zro(account_number, private_key, _, proxy, **kwargs):
     network = ArbitrumRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.full_claim_zro()
+    return await worker.full_claim_zro(**kwargs)
 
 
-async def transfer_zro(account_number, private_key, _, proxy):
-    network = {
-        1: ArbitrumRPC,
-        2: BaseRPC,
-        3: OptimismRPC,
-        4: BSC_RPC,
-    }[ZRO_DST_CHAIN]
+async def cex_deposit_util(current_client, dapp_id: int, deposit_data: tuple):
+    class_name = {
+        1: OKX,
+    }[dapp_id]
+
+    return await class_name(current_client).deposit(deposit_data=deposit_data)
+
+
+async def okx_withdraw_util(current_client, **kwargs):
+    worker = OKX(current_client)
+    return await worker.withdraw(**kwargs)
+
+
+async def okx_withdraw(account_name, private_key, network, proxy):
+    worker = Custom(get_client(account_name, private_key, network, proxy))
+    return await worker.smart_cex_withdraw(dapp_id=1)
+
+
+async def okx_deposit(account_name, private_key, network, proxy):
+    worker = Custom(get_client(account_name, private_key, network, proxy))
+    return await worker.smart_cex_deposit(dapp_id=1)
+
+
+async def transfer_zro(account_number, private_key, network, proxy):
     worker = Custom(get_client(account_number, private_key, network, proxy))
     return await worker.transfer_zro()
 

@@ -7,7 +7,7 @@ from modules import CEX, Logger
 from datetime import datetime, timezone
 
 from modules.interfaces import SoftwareExceptionWithoutRetry, InsufficientBalanceException, SoftwareException
-from settings import OKX_EU_TYPE, OKX_WITHDRAW_NETWORK, OKX_WITHDRAW_AMOUNT
+from settings import OKX_EU_TYPE
 from utils.tools import helper, get_wallet_for_deposit
 from config import OKX_NETWORKS_NAME, CEX_WRAPPED_ID, TOKENS_PER_CHAIN
 
@@ -249,10 +249,7 @@ class OKX(CEX, Logger):
     async def withdraw(self, withdraw_data: tuple = None):
         url = 'https://www.okx.cab/api/v5/asset/withdrawal'
 
-        if withdraw_data:
-            network, amount = withdraw_data
-        else:
-            network, amount = OKX_WITHDRAW_NETWORK, OKX_WITHDRAW_AMOUNT
+        network, amount = withdraw_data
         network_raw_name = OKX_NETWORKS_NAME[network]
         split_network_data = network_raw_name.split('-')
         ccy, network_name = split_network_data[0], '-'.join(split_network_data[1:])

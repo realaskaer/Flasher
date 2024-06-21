@@ -6,11 +6,7 @@ from termcolor import cprint
 from questionary import Choice, select
 from utils.modules_runner import Runner
 from utils.route_generator import RouteGenerator
-from utils.tools import create_cex_withdrawal_list, prepare_wallets
-
-
-async def prepare_wallets_main():
-    await prepare_wallets()
+from utils.tools import create_cex_withdrawal_list
 
 
 def main():
@@ -28,7 +24,7 @@ def main():
         answer = select(
             'What do you want to do?',
             choices=[
-                Choice("🚀 Claim and Transfer ZRO", 'classic_routes_run'),
+                Choice("🚀 Start running all account with route progress", 'classic_routes_run'),
                 Choice("📄 Generate classic-route for each wallet", 'classic_routes_gen'),
                 Choice('❌ Exit', "exit")
             ],

@@ -2,14 +2,9 @@ from aiohttp import ContentTypeError, ClientSession
 from loguru import logger
 from sys import stderr
 from datetime import datetime
-from web3 import AsyncWeb3
 from abc import ABC, abstractmethod
 from random import uniform
-
-from config import CHAIN_NAME
-from settings import (LAYERSWAP_API_KEY, OKX_API_KEY, OKX_API_PASSPHRAS,
-                      OKX_API_SECRET, GLOBAL_NETWORK)
-from utils.networks import StarknetRPC
+from settings import LAYERSWAP_API_KEY, OKX_API_KEY, OKX_API_PASSPHRAS, OKX_API_SECRET
 
 
 class PriceImpactException(Exception):
@@ -73,12 +68,11 @@ class Logger(ABC):
 
     def logger_msg(self, account_name, address, msg, type_msg: str = 'info'):
         if account_name is None and address is None:
-            info = f'[Attack machine] | {CHAIN_NAME[GLOBAL_NETWORK]} | {self.__class__.__name__} |'
+            info = f'[Flasher] | OmniChain | {self.__class__.__name__} |'
         elif account_name is not None and address is None:
-            info = f'[{account_name}] | {CHAIN_NAME[GLOBAL_NETWORK]} | {self.__class__.__name__} |'
+            info = f'[{account_name}] | OmniChain | {self.__class__.__name__} |'
         else:
-            address = hex(address) if GLOBAL_NETWORK == 9 else address
-            info = f'[{account_name}] | {address} | {CHAIN_NAME[GLOBAL_NETWORK]} | {self.__class__.__name__} |'
+            info = f'[{account_name}] | {address} | OmniChain | {self.__class__.__name__} |'
         if type_msg == 'info':
             self.logger.info(f"{info} {msg}")
         elif type_msg == 'error':
@@ -155,21 +149,6 @@ class Bridge(ABC):
                 "Accept": "application/json",
                 "Content-Type": "application/json",
             }
-
-    async def get_address_for_bridge(self, private_key:str, stark_key_type:bool):
-        from modules import StarknetClient
-        if private_key is None:
-            return
-        elif stark_key_type:
-            stark_client = None
-            try:
-                stark_client = StarknetClient('Bridge', private_key, StarknetRPC, self.client.proxy_init)
-                await stark_client.initialize_account()
-                return hex(stark_client.address)
-            finally:
-                await stark_client.session.close()
-        else:
-            return AsyncWeb3().eth.account.from_key(private_key).address
 
     async def make_request(self, method:str = 'GET', url:str = None, headers:dict = None, params: dict = None,
                            data:str = None, json:dict = None):

@@ -10,5 +10,5 @@ from .swaps import Protoss
 from .swaps import MySwap
 from .swaps import Thruster
 from .swaps import SyncSwap
-from .others import Custom
+from .cutsom_module import Custom
 from .others import Inscription

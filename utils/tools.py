@@ -10,20 +10,21 @@ import msoffcrypto
 import pandas as pd
 
 from getpass import getpass
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientProxyConnectionError, ClientHttpProxyError, ClientResponseError
+from python_socks import ProxyError
 from termcolor import cprint
 from datetime import datetime, timedelta
 from msoffcrypto.exceptions import DecryptionError, InvalidKeyError
-from settings import (
-    GLOBAL_NETWORK,
-    SLEEP_TIME_RETRY,
-    MAXIMUM_RETRY,
-    EXCEL_PASSWORD,
-    EXCEL_PAGE_NAME
-)
+from web3 import AsyncWeb3, AsyncHTTPProvider
+from web3.exceptions import ContractLogicError
+
+from settings import SLEEP_TIME_RETRY, MAXIMUM_RETRY, EXCEL_PASSWORD, EXCEL_PAGE_NAME, SLEEP_TIME_MODULES, GAS_CONTROL, \
+    SLEEP_TIME_GAS, MAXIMUM_GWEI
 
 
-async def sleep(self, min_time, max_time):
+async def sleep(self, min_time=None, max_time=None):
+    if not min_time:
+        min_time, max_time = SLEEP_TIME_MODULES
     duration = random.randint(min_time, max_time)
     print()
     self.logger_msg(*self.client.acc_info, msg=f"💤 Sleeping for {duration} seconds")
@@ -73,12 +74,10 @@ def get_accounts_data(page_name:str = None):
         for index, row in wb.iterrows():
             account_name = row["Name"]
             private_key = row["Private Key"]
-            private_key_evm = row["Private Key EVM"] if GLOBAL_NETWORK == 9 else 0x123
             proxy = row["Proxy"]
             cex_address = row['CEX address']
             accounts_data[int(index) + 1] = {
                 "account_name": account_name,
-                "private_key_evm": private_key_evm,
                 "private_key": private_key,
                 "proxy": proxy,
                 "cex_wallet": cex_address,
@@ -88,7 +87,6 @@ def get_accounts_data(page_name:str = None):
         for k, v in accounts_data.items():
             if isinstance(v['account_name'], str):
                 acc_name.append(v['account_name'])
-                priv_key_evm.append(v['private_key_evm'])
                 priv_key.append(v['private_key'])
             proxy.append(v['proxy'] if isinstance(v['proxy'], str) else None)
             cex_wallet.append(v['cex_wallet'] if isinstance(v['cex_wallet'], str) else None)
@@ -96,7 +94,7 @@ def get_accounts_data(page_name:str = None):
         proxy = [item for item in proxy if item is not None]
         cex_wallet = [item for item in cex_wallet if item is not None]
 
-        return acc_name, priv_key_evm, priv_key, proxy, cex_wallet
+        return acc_name, priv_key, proxy, cex_wallet
 
 
 def clean_stark_file():
@@ -184,65 +182,173 @@ def get_wallet_for_deposit(self):
 def helper(func):
     @functools.wraps(func)
     async def wrapper(self, *args, **kwargs):
+        from modules.interfaces import (
+            PriceImpactException, BlockchainException, SoftwareException, SoftwareExceptionWithoutRetry,
+            BlockchainExceptionWithoutRetry, CriticalException, SoftwareExceptionHandled
+        )
+
         attempts = 0
+        stop_flag = False
+        infinity_flag = False
+        no_sleep_flag = False
         try:
-            while True:
+            while attempts <= MAXIMUM_RETRY and not infinity_flag:
                 try:
                     return await func(self, *args, **kwargs)
-                except Exception as error:
-                    traceback.print_exc()
-                    self.logger_msg(
-                        self.client.account_name,
-                        None, msg=f"{error} | Try[{attempts + 1}/{MAXIMUM_RETRY + 1}]", type_msg='error'
-                    )
+                except (
+                        PriceImpactException, BlockchainException, SoftwareException, SoftwareExceptionWithoutRetry,
+                        SoftwareExceptionHandled, BlockchainExceptionWithoutRetry, ValueError, ContractLogicError,
+                        ClientProxyConnectionError, TimeoutError, ClientHttpProxyError, ProxyError,
+                        ClientResponseError, CriticalException, KeyError
+                ) as err:
+                    error = err
                     attempts += 1
-                    if attempts > MAXIMUM_RETRY:
+                    traceback.print_exc()
+                    msg = f'{error} | Try[{attempts}/{MAXIMUM_RETRY + 1}]'
+
+                    if isinstance(error, KeyError):
+                        stop_flag = True
+                        msg = f"Setting '{error}' for this module is not exist in software!"
+
+                    elif isinstance(error, SoftwareExceptionHandled):
+                        self.logger_msg(
+                            *self.client.acc_info, msg=f"Insufficient balances in all networks!", type_msg='warning'
+                        )
+                        return True
+
+                    elif 'StatusCode.UNAVAILABLE' in str(error):
+                        msg = f'Rate limit exceeded. Will try again in 1 min...'
+                        await asyncio.sleep(60)
+                        no_sleep_flag = True
+
+                    elif 'rate limit' in str(error) or '429' in str(error):
+                        msg = f'Rate limit exceeded. Will try again in 5 min...'
+                        await asyncio.sleep(300)
+                        no_sleep_flag = True
+
+                    elif 'StatusCode.UNAVAILABLE' in str(error):
+                        msg = f'RPC got autism response, will try again in 10 second...'
+                        await asyncio.sleep(10)
+                        no_sleep_flag = True
+
+                    elif isinstance(error, (
+                            ClientProxyConnectionError, TimeoutError, ClientHttpProxyError, ProxyError,
+                            ClientResponseError
+                    )):
+                        self.logger_msg(
+                            *self.client.acc_info,
+                            msg=f"Connection to RPC is not stable. Will try again in 1 min...",
+                            type_msg='warning'
+                        )
+                        await self.client.change_rpc()
+                        await asyncio.sleep(60)
+                        attempts -= 1
+                        no_sleep_flag = True
+
+                    elif isinstance(error, CriticalException):
+                        raise error
+
+                    elif isinstance(error, (SoftwareExceptionWithoutRetry, BlockchainExceptionWithoutRetry)):
+                        stop_flag = True
+                        msg = f'{error}'
+
+                    elif isinstance(error, BlockchainException):
+                        if 'insufficient funds' not in str(error):
+                            self.logger_msg(
+                                self.client.account_name,
+                                None, msg=f'Maybe problem with node: {self.client.rpc}', type_msg='warning')
+                            await self.client.change_rpc()
+
+                    self.logger_msg(self.client.account_name, None, msg=msg, type_msg='error')
+
+                    if stop_flag:
                         break
-                    await sleep(self, *SLEEP_TIME_RETRY)
+
+                    if attempts > MAXIMUM_RETRY and not infinity_flag:
+                        self.logger_msg(
+                            self.client.account_name, None,
+                            msg=f"Tries are over, software will stop module\n", type_msg='error'
+                        )
+                    else:
+                        if not no_sleep_flag:
+                            await sleep(self, *SLEEP_TIME_RETRY)
+
+                except Exception as error:
+                    attempts += 1
+                    msg = f'Unknown Error. Description: {error} | Try[{attempts}/{MAXIMUM_RETRY + 1}]'
+                    self.logger_msg(self.client.account_name, None, msg=msg, type_msg='error')
+                    traceback.print_exc()
+
+                    if attempts > MAXIMUM_RETRY and not infinity_flag:
+                        self.logger_msg(
+                            self.client.account_name, None,
+                            msg=f"Tries are over, software will stop module\n", type_msg='error'
+                        )
         finally:
             await self.client.session.close()
-        self.logger_msg(self.client.account_name,
-                        None, msg=f"Tries are over, launching next module.\n", type_msg='error')
         return False
     return wrapper
 
 
-async def prepare_wallets():
-    from config import ACCOUNT_NAMES, PRIVATE_KEYS
-    # from modules.stark_client import StarknetClient
-    # from utils.networks import StarknetRPC
-    #
-    # clean_stark_file()
-    #
-    # async def prepare_wallet(account_name, private_key):
-    #
-    #     if await StarknetClient.check_stark_data_file(account_name):
-    #         return
-    #
-    #     try:
-    #         key_pair = KeyPair.from_private_key(private_key)
-    #         w3 = FullNodeClient(node_url=random.choice(StarknetRPC.rpc))
-    #
-    #         possible_addresses = [(StarknetClient.get_argent_address(key_pair, 1), 0, 1),
-    #                               (StarknetClient.get_braavos_address(key_pair), 1, 0),
-    #                               (StarknetClient.get_argent_address(key_pair, 0), 0, 0)]
-    #
-    #         for address, wallet_type, cairo_version in possible_addresses:
-    #             account = Account(client=w3, address=address, key_pair=key_pair, chain=StarknetChainId.MAINNET)
-    #             try:
-    #                 result = await account.client.get_class_hash_at(address)
-    #
-    #                 if result:
-    #                     await StarknetClient.save_stark_data_file(account_name, address, wallet_type, cairo_version)
-    #             except ClientError:
-    #                 pass
-    #     except Exception as error:
-    #         raise RuntimeError(f'Wallet is not deployed! Error: {error}')
-    #
-    # tasks = []
-    # for account_name, private_key in zip(ACCOUNT_NAMES, PRIVATE_KEYS):
-    #     tasks.append(asyncio.create_task(prepare_wallet(account_name, private_key)))
-    # await asyncio.gather(*tasks)
+def get_max_gwei_setting():
+    file_path = './data/services/maximum_gwei.json'
+    data = {}
+
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data['maximum_gwei'] = MAXIMUM_GWEI
+
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
+    return data['maximum_gwei']
+
+
+def gas_checker(func):
+    @functools.wraps(func)
+    async def wrapper(self, *args, **kwargs):
+        if GAS_CONTROL:
+            await asyncio.sleep(1)
+            print()
+            counter = 0
+
+            self.logger_msg(self.client.account_name, None, f"Checking for gas price")
+
+            w3 = AsyncWeb3(AsyncHTTPProvider(
+                random.choice(self.client.network.rpc), request_kwargs=self.client.request_kwargs
+            ))
+
+            while True:
+                try:
+                    gas = round(AsyncWeb3.from_wei(await w3.eth.gas_price, 'gwei'), 3)
+
+                    if gas < get_max_gwei_setting():
+
+                        self.logger_msg(
+                            self.client.account_name, None, f"{gas} Gwei | Gas price is good", type_msg='success')
+                        return await func(self, *args, **kwargs)
+
+                    else:
+                        counter += 1
+                        self.logger_msg(
+                            self.client.account_name, None,
+                            f"{gas} Gwei | Gas is too high. Next check in {SLEEP_TIME_GAS} second", type_msg='warning')
+
+                        await asyncio.sleep(SLEEP_TIME_GAS)
+                except (
+                        ClientProxyConnectionError, TimeoutError, ClientHttpProxyError, ProxyError, ClientResponseError
+                ):
+                    self.logger_msg(
+                        *self.client.acc_info,
+                        msg=f"Connection to RPC is not stable. Will try again in 1 min...",
+                        type_msg='warning'
+                    )
+                    await asyncio.sleep(60)
+        return await func(self, *args, **kwargs)
+
+    return wrapper
 
 
 async def get_eth_price():

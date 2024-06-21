@@ -12,25 +12,18 @@ from settings import CLASSIC_ROUTES_MODULES_USING
 AVAILABLE_MODULES_INFO = {
     # module_name                       : (module name, priority, tg info, can be help module, supported network)
     okx_withdraw                        : (okx_withdraw, -3, 'OKX Withdraw', 0, [2, 3, 4, 8, 9, 11, 12]),
-    check_pool_jediswap                 : (check_pool_jediswap, 2, 'Check MemCoin Pool on JediSwap', 0, [9]),
-    # mint_token_jediswap                 : (mint_token_jediswap, 3, 'Looooot a new one shit coin =)', 0, [0]),
-    # mint_token_jediswap_batch           : (mint_token_jediswap_batch, 3, 'Looooot a new one shit coin =)', 0, [0]),
-    sell_shitcoin_jediswap              : (sell_shitcoin_jediswap, 3, 'Sell a new one shit coin =)', 0, [0]),
-    buy_memcoin_thruster                : (buy_memcoin_thruster, 3, 'Looooot a new one shit coin =)', 0, [0]),
-    sell_memcoin_thruster               : (sell_memcoin_thruster, 3, 'Sell a new one shit coin =)', 0, [0]),
     claim_taiko                          : (claim_taiko, 3, 'Claim TAIKO', 0, [0]),
-    claim_zro                             : (claim_zro, 3, 'Claim ZRO', 0, [0]),
+    smart_claim_zro                       : (smart_claim_zro, 3, 'Smart Claim ZRO', 0, [0]),
+    smart_transfer_zro                       : (smart_transfer_zro, 3, 'Smart Transfer ZRO', 0, [0]),
     claim_zk                             : (claim_zk, 3, 'Claim ZK', 0, [0]),
     swap_zk                             : (swap_zk, 3, 'Swap ZK on SyncSwap', 0, [0]),
     transfer_taiko                       : (transfer_taiko, 3, 'Transfer TAIKO', 0, [0]),
     transfer_zk                          : (transfer_zk, 3, 'Transfer ZK', 0, [0]),
-    transfer_zro                          : (transfer_zro, 3, 'Transfer ZRO', 0, [0]),
     buy_node                            : (buy_node, 3, 'Buy Sophon Node', 0, [0]),
     claim_and_transfer_imx              : (claim_and_transfer_imx, 3, 'Claim Gems and send IMX to next wallet', 0, [0]),
     approve_weth_for_buy_node           : (approve_weth_for_buy_node, 3, 'Approve for buying Sophon Node', 0, [0]),
     stress_test                         : (stress_test, 3, 'Stress test', 0, [0]),
     okx_deposit                         : (okx_deposit, 4, 'OKX Deposit', 0, [2, 3, 4, 8, 9, 11, 12]),
-    okx_collect_from_sub                : (okx_collect_from_sub, 5, 'OKX Collect money', 0, [2, 3, 4, 8, 9, 11, 12])
 }
 
 

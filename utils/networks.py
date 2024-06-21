@@ -226,7 +226,7 @@ Polygon_ZKEVM_RPC = Network(
 )
 
 BSC_RPC = Network(
-    name='BNB chain',
+    name='BNB Chain',
     rpc=[
         'https://binance.llamarpc.com',
         'https://bsc-dataseed.bnbchain.org',
