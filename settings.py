@@ -290,8 +290,8 @@ ZRO_DST_CHAIN = [1, 2, 3]
     Список модулей сверху.
     
     CLASSIC_ROUTES_MODULES_USING = [
-        ['claim_zro'],
-        ['transfer_zro'],
+        ['smart_claim_zro'],
+        ['smart_transfer_zro'],
         ...
     ]
 """
