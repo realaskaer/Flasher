@@ -697,7 +697,6 @@ class Custom(Logger, Aggregator):
 
         return await self.client.send_transaction(transfer_tx)
 
-    @helper
     async def transfer_zro(self):
 
         zro_contract = self.client.get_contract('0x6985884C4392D348587B19cb9eAAf157F13271cd', ERC20_ABI)
