@@ -657,7 +657,7 @@ class Custom(Logger, Aggregator):
                 min_withdraw_amount = {
                     2: 0.0011,
                     6: 0.00204
-                }[withdraw_network]
+                }.get(withdraw_network, 0.0001)
 
                 if value < min_withdraw_amount:
                     amount_to_withdraw = min_withdraw_amount, min_withdraw_amount * 1.1
