@@ -654,8 +654,18 @@ class Custom(Logger, Aggregator):
 
                 from functions import okx_withdraw_util
 
+                min_withdraw_amount = {
+                    2: 0.0011,
+                    6: 0.00204
+                }[withdraw_network]
+
+                if value < min_withdraw_amount:
+                    amount_to_withdraw = min_withdraw_amount, min_withdraw_amount * 1.1
+                else:
+                    amount_to_withdraw = (value / 10 ** 18, (value / 10 ** 18) * 1.1)
+
                 await okx_withdraw_util(
-                    new_client, withdraw_data=(withdraw_network, (value / 10 ** 18, (value / 10 ** 18) * 1.1))
+                    new_client, withdraw_data=(withdraw_network, amount_to_withdraw)
                 )
 
             transaction = await claim_contract.functions.donateAndClaim(
