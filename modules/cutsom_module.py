@@ -261,6 +261,8 @@ class Custom(Logger, Aggregator):
                 await asyncio.sleep(60)
             except SoftwareException as error:
                 raise error
+            except SoftwareExceptionHandled as error:
+                raise error
             except Exception as error:
                 if 'list index out of range' in str(error):
                     traceback.print_exc()
@@ -704,7 +706,7 @@ class Custom(Logger, Aggregator):
         dep_address = get_wallet_for_deposit(self)
 
         balance_in_wei, balance, _ = await self.client.get_token_balance('ZRO', omnicheck=True)
-        result = False
+        result = True
 
         if balance > 0:
 
