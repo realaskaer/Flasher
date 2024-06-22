@@ -642,7 +642,7 @@ class Custom(Logger, Aggregator):
                 value = donate_amount + claim_bridge_fee + scr_chain_claim_fee
 
             else:
-                new_client = self.client
+                new_client: Client = await self.client.new_client(1)
                 withdraw_network = 2
                 donate_amount = (await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[-1]
                 value = donate_amount
@@ -659,10 +659,13 @@ class Custom(Logger, Aggregator):
                     6: 0.00204
                 }.get(withdraw_network, 0.0001)
 
-                if value < int(min_withdraw_amount * 10 ** 18):
+                _, wallet_balance, _ = await self.client.get_token_balance()
+                need_to_withdraw = int(value - wallet_balance + (0.0003 * 10 ** 18))
+
+                if need_to_withdraw < int(min_withdraw_amount * 10 ** 18):
                     amount_to_withdraw = min_withdraw_amount, min_withdraw_amount * 1.1
                 else:
-                    amount_to_withdraw = (value / 10 ** 18, (value / 10 ** 18) * 1.1)
+                    amount_to_withdraw = (need_to_withdraw / 10 ** 18, (need_to_withdraw / 10 ** 18) * 1.1)
 
                 await okx_withdraw_util(
                     new_client, withdraw_data=(withdraw_network, amount_to_withdraw)

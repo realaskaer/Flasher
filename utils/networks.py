@@ -178,7 +178,6 @@ BaseRPC = Network(
     rpc=[
         'https://mainnet.base.org',
         'https://base.llamarpc.com',
-        'https://1rpc.io/base',
         'https://base.meowrpc.com',
         'https://base.drpc.org',
     ],
