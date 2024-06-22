@@ -659,7 +659,7 @@ class Custom(Logger, Aggregator):
                     6: 0.00204
                 }.get(withdraw_network, 0.0001)
 
-                if value < min_withdraw_amount:
+                if value < int(min_withdraw_amount * 10 ** 18):
                     amount_to_withdraw = min_withdraw_amount, min_withdraw_amount * 1.1
                 else:
                     amount_to_withdraw = (value / 10 ** 18, (value / 10 ** 18) * 1.1)
