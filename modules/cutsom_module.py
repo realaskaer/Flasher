@@ -695,7 +695,8 @@ class Custom(Logger, Aggregator):
 
                 min_withdraw_amount = {
                     2: 0.01,
-                    6: 0.0001
+                    6: 0.0001,
+                    8: 0.01
                 }.get(withdraw_network, 0.0001)
 
                 _, wallet_balance, _ = await self.client.get_token_balance()

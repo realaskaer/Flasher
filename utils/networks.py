@@ -100,10 +100,7 @@ TaikoRPC = Network(
 OptimismRPC = Network(
     name='Optimism',
     rpc=[
-        'https://rpc.ankr.com/optimism/',
         'https://optimism.llamarpc.com',
-        'https://optimism.drpc.org',
-        'https://1rpc.io/op'
     ],
     chain_id=10,
     eip1559_support=True,
@@ -178,8 +175,6 @@ BaseRPC = Network(
     rpc=[
         'https://mainnet.base.org',
         'https://base.llamarpc.com',
-        'https://base.meowrpc.com',
-        'https://base.drpc.org',
     ],
     chain_id=8453,
     eip1559_support=True,
