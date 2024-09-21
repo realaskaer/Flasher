@@ -1,10 +1,12 @@
+import asyncio
+
 from aiohttp import ContentTypeError, ClientSession
 from loguru import logger
 from sys import stderr
 from datetime import datetime
 from abc import ABC, abstractmethod
 from random import uniform
-from settings import LAYERSWAP_API_KEY, OKX_API_KEY, OKX_API_PASSPHRAS, OKX_API_SECRET
+from settings import LAYERSWAP_API_KEY, BITGET_API_KEY, BITGET_API_SECRET, BITGET_API_PASSPHRAS
 
 
 class PriceImpactException(Exception):
@@ -93,25 +95,48 @@ class CEX(ABC):
     def __init__(self, client):
         self.client = client
 
-        self.api_key = OKX_API_KEY
-        self.api_secret = OKX_API_SECRET
-        self.passphras = OKX_API_PASSPHRAS
+        self.class_name = 'Bitget'
+        self.api_key = BITGET_API_KEY
+        self.api_secret = BITGET_API_SECRET
+        self.passphras = BITGET_API_PASSPHRAS
 
-    @staticmethod
-    async def make_request(method:str = 'GET', url:str = None, data:str = None, params:dict = None,
-                           headers:dict = None, json:dict = None, module_name:str = 'Request'):
+    async def make_request(self, method: str = 'GET', url: str = None, data: str = None, params: dict = None,
+                           headers: dict = None, json: dict = None, module_name: str = 'Request',
+                           content_type: str | None = "application/json"):
+
+        insf_balance_code = {
+            'BingX': [100437],
+            'Binance': [4026],
+            'Bitget': [43012, 13004],
+            'OKX': [58350],
+        }[self.class_name]
 
         async with ClientSession() as session:
-            async with session.request(method=method, url=url, headers=headers, data=data, json=json,
-                                       params=params) as response:
+            async with session.request(
+                    method=method, url=url, headers=headers, data=data, json=json, params=params
+            ) as response:
+                data: dict = await response.json(content_type=content_type)
 
-                data = await response.json()
-                if data['code'] != 0 and data['msg'] != '':
-                    error = f"Error code: {data['code']} Msg: {data['msg']}"
-                    raise RuntimeError(f"Bad request to OKX({module_name}): {error}")
-                else:
-                    # self.logger.success(f"{self.info} {module_name}")
-                    return data['data']
+                if self.class_name == 'Binance' and response.status in [200, 201]:
+                    return data
+
+                if int(data.get('code')) != 0:
+                    message = data.get('msg') or data.get('desc') or 'Unknown error'
+                    code = int(data['code'])
+                    if code in insf_balance_code:
+                        self.client.logger_msg(
+                            *self.client.acc_info,
+                            msg=f"Your CEX balance < your want transfer amount. Will try again in 5 min...",
+                            type_msg='warning'
+                        )
+                        await asyncio.sleep(300)
+                        raise InsufficientBalanceException('Trying request again...')
+
+                    error = f"Error code: {data['code']} Msg: {message}"
+                    raise SoftwareException(f"Bad request to {self.class_name}({module_name}): {error}")
+
+                # self.logger.success(f"{self.info} {module_name}")
+                return data['data']
 
 
 class Aggregator(ABC):

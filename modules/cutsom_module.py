@@ -9,7 +9,7 @@ import python_socks
 from eth_account.messages import encode_structured_data
 
 from config import TAIKO_ABI, ERC20_ABI, ZK_ABI, CLAIM_ABI, CEX_WRAPPED_ID, \
-    OKX_NETWORKS_NAME, OMNICHAIN_WRAPED_NETWORKS, COINGECKO_TOKEN_API_NAMES, CHAIN_NAME, TOKENS_PER_CHAIN
+    OKX_NETWORKS_NAME, OMNICHAIN_WRAPED_NETWORKS, COINGECKO_TOKEN_API_NAMES, CHAIN_NAME, TOKENS_PER_CHAIN, DONATION_ABI
 from modules import Logger, Aggregator, Client
 from modules.interfaces import CriticalException, SoftwareException, SoftwareExceptionWithoutRetry, \
     SoftwareExceptionHandled
@@ -19,7 +19,7 @@ from settings import TWO_CAPTCHA_API_KEY, ZRO_DST_CHAIN, OKX_DEPOSIT_DATA, OKX_W
     NITRO_CHAIN_ID_FROM, ORBITER_CHAIN_ID_FROM, ORBITER_TOKEN_NAME, ORBITER_AMOUNT_LIMITER, OWLTO_CHAIN_ID_FROM, \
     OWLTO_TOKEN_NAME, OWLTO_AMOUNT_LIMITER, RHINO_CHAIN_ID_FROM, RELAY_CHAIN_ID_FROM, NATIVE_CHAIN_ID_FROM, \
     RELAY_TOKEN_NAME, RELAY_AMOUNT_LIMITER, RHINO_TOKEN_NAME, RHINO_AMOUNT_LIMITER, NATIVE_TOKEN_NAME, \
-    NATIVE_AMOUNT_LIMITER, BRIDGE_SWITCH_CONTROL
+    NATIVE_AMOUNT_LIMITER, BRIDGE_SWITCH_CONTROL, WAIT_FOR_RECEIPT_L0
 from eth_abi import encode
 from utils.tools import helper, get_wallet_for_deposit, sleep, gas_checker
 
@@ -214,7 +214,7 @@ class Custom(Logger, Aggregator):
                     if 'USD' not in token_name:
                         if token_name not in token_prices:
                             if token_name != '':
-                                token_price = await self.client.get_token_price(COINGECKO_TOKEN_API_NAMES[token_name])
+                                token_price = 1 #await self.client.get_token_price(COINGECKO_TOKEN_API_NAMES[token_name])
                             else:
                                 token_price = 0
                             token_prices[token_name] = token_price
@@ -575,48 +575,87 @@ class Custom(Logger, Aggregator):
 
         return await self.client.send_transaction(transaction)
 
-    async def full_claim_zro(self, claim_chain_id):
-        url = f"https://www.layerzero.foundation/api/proof/{self.client.address}"
+    @helper
+    async def full_claim_zro(self):
+        from functions import ArbitrumRPC, OptimismRPC, BaseRPC, BSC_RPC
+
+        url = f"https://layerzero.foundation/api/proof/{self.client.address}"
+
+        response = await self.make_request(url=url, zro_claim=True)
+
+        if not response:
+            self.logger_msg(*self.client.acc_info, msg=f'You are not eligible to claim ZRO', type_msg='warning')
+            return False
 
         claim_addresses = {
             1: "0xB09F16F625B363875e39ADa56C03682088471523",
             2: "0xf19ccb20726Eab44754A59eFC4Ad331e3bF4F248",
             3: "0x3Ef4abDb646976c096DF532377EFdfE0E6391ac3",
             4: "0x9c26831a80Ef7Fb60cA940EB9AA22023476B3468",
-        }[claim_chain_id]
+        }
 
-        response = await self.make_request(url=url, zro_claim=True)
+        first_chain_claimed = 1
+        for index, contract_address in claim_addresses.items():
+            client_rpc, rpc_id, eid, withdraw_network = {
+                1: (ArbitrumRPC, 1, 0, 0),
+                2: (BaseRPC, 3, 30184, 6),
+                3: (OptimismRPC, 7, 30111, 3),
+                4: (BSC_RPC, 15, 30102, 8),
+            }[index]
 
-        if response:
-            amount_to_claim = int(response['amount'])
-            merkle_proof = response['proof'].split('|')
-            ext_data = '0x'
+            new_client: Client = await self.client.new_client(rpc_id)
 
-            self.logger_msg(
-                *self.client.acc_info, msg=f'Claim {amount_to_claim / 10 ** 18:.2f} ZRO'
-            )
+            claim_contact = new_client.get_contract(contract_address, CLAIM_ABI)
 
-            claim_contract = self.client.get_contract(claim_addresses, CLAIM_ABI)
-            quoter_addresses = self.client.get_contract('0xd6b6a6701303B5Ea36fa0eDf7389b562d8F894DB', CLAIM_ABI)
+            donation_contract_address = await claim_contact.functions.donateContract().call()
+            donation_contract = new_client.get_contract(donation_contract_address, DONATION_ABI)
 
-            claim_result = await quoter_addresses.functions.zroClaimed(
-                self.client.address
-            ).call()
+            donation_amount = await donation_contract.functions.getDonation(new_client.address).call()
 
-            if claim_result > 0:
-                self.logger_msg(*self.client.acc_info, msg=f'Already claimed ZRO', type_msg='warning')
-                return True
+            if any([amount for amount in donation_amount]):
+                self.logger_msg(
+                    *self.client.acc_info, msg=f'Found last network, where you are claimed ZRO already: {client_rpc.name}'
+                )
+                first_chain_claimed = index
+                await new_client.session.close()
+                break
+            else:
+                await new_client.session.close()
 
-            if claim_chain_id != 1:
-                from functions import OptimismRPC, BaseRPC, BSC_RPC
+        claim_address = claim_addresses[first_chain_claimed]
+        full_amount_to_claim = int(response['amount'])
+        amount_to_claim_round1 = int(response['round2'])
+        amount_to_claim = int(response['round2'])
+        merkle_proof = response['proof'].split('|')
+        ext_data = '0x'
 
-                client_rpc, rpc_id, eid, withdraw_network = {
-                    2: (BaseRPC, 3, 30184, 6),
-                    3: (OptimismRPC, 7, 30111, 3),
-                    4: (BSC_RPC, 15, 30102, 8),
-                }[claim_chain_id]
+        self.logger_msg(
+            *self.client.acc_info, msg=f'Claim {amount_to_claim / 10 ** 18:.2f} ZRO in {client_rpc.name}'
+        )
 
-                donate_amount = (await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[-1]
+        claim_contract = self.client.get_contract(claim_address, CLAIM_ABI)
+        quoter_addresses = self.client.get_contract('0xd6b6a6701303B5Ea36fa0eDf7389b562d8F894DB', CLAIM_ABI)
+
+        claim_result = await quoter_addresses.functions.zroClaimed(
+            self.client.address
+        ).call()
+
+        if claim_result > full_amount_to_claim - amount_to_claim_round1:
+            self.logger_msg(*self.client.acc_info, msg=f'Already claimed ZRO', type_msg='warning')
+            return True
+
+        client_rpc, rpc_id, eid, withdraw_network = {
+            1: (ArbitrumRPC, 1, 0, 0),
+            2: (BaseRPC, 3, 30184, 6),
+            3: (OptimismRPC, 7, 30111, 3),
+            4: (BSC_RPC, 15, 30102, 8),
+        }[first_chain_claimed]
+
+        new_client = None
+        try:
+            if rpc_id != 1:
+
+                donate_amount = int((await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[-1] * 1.2)
 
                 new_client: Client = await self.client.new_client(rpc_id)
 
@@ -627,7 +666,7 @@ class Custom(Logger, Aggregator):
 
                 ext_data = '0x000301002101' + encode(['uint256'], [claim_bridge_fee]).hex()
 
-                claim_contract = new_client.get_contract(claim_addresses, CLAIM_ABI)
+                claim_contract = new_client.get_contract(claim_address, CLAIM_ABI)
 
                 scr_chain_fee_claimer = await claim_contract.functions.claimContract().call()
 
@@ -655,8 +694,8 @@ class Custom(Logger, Aggregator):
                 from functions import okx_withdraw_util
 
                 min_withdraw_amount = {
-                    2: 0.0011,
-                    6: 0.00204
+                    2: 0.01,
+                    6: 0.0001
                 }.get(withdraw_network, 0.0001)
 
                 _, wallet_balance, _ = await self.client.get_token_balance()
@@ -674,7 +713,7 @@ class Custom(Logger, Aggregator):
             transaction = await claim_contract.functions.donateAndClaim(
                 2,
                 donate_amount,
-                amount_to_claim,
+                full_amount_to_claim,
                 merkle_proof,
                 new_client.address,
                 ext_data
@@ -682,16 +721,18 @@ class Custom(Logger, Aggregator):
 
             tx_hash = await new_client.send_transaction(transaction, need_hash=True)
 
-            await self.client.wait_for_l0_received(tx_hash=tx_hash)
+            if WAIT_FOR_RECEIPT_L0:
+                await self.client.wait_for_l0_received(tx_hash=tx_hash)
+            else:
+                self.logger_msg(
+                    *self.client.acc_info, msg=f'Please wait at least 2-3 min, to receiving your ZRO',
+                    type_msg='warning'
+                )
+                await asyncio.sleep(random.randint(120, 180))
 
+            return True
+        finally:
             await new_client.session.close()
-            await self.client.session.close()
-
-        else:
-            self.logger_msg(*self.client.acc_info, msg=f'You are not eligible to claim ZRO', type_msg='warning')
-            await self.client.session.close()
-
-        return True
 
     @helper
     async def transfer_zk(self):
@@ -749,42 +790,6 @@ class Custom(Logger, Aggregator):
         swap_data = 'ZK', 'USDC', balance, balance_in_wei
 
         return await swap_syncswap(self.client, swap_data=swap_data)
-
-    @helper
-    async def smart_claim_zro(self):
-        from functions import claim_zro
-
-        search_chain = copy.deepcopy(ZRO_DST_CHAIN)
-
-        converted_chains = {
-            1: 1,
-            2: 7,
-            3: 31,
-            4: 6
-        }
-
-        new_chains = []
-        for chain in search_chain:
-            new_chains.append(converted_chains[chain])
-
-        client, chain_index, balance, _, balance_data = await self.balance_searcher(
-            chains=new_chains, native_check=True
-        )
-
-        claim_chain_id = {
-            'Arbitrum': 1,
-            'Base': 2,
-            'Optimism': 3,
-            'BNB Chain': 4,
-        }[client.network.name]
-
-        result = await claim_zro(
-            client.account_name, client.private_key, client.network, client.proxy_init, claim_chain_id=claim_chain_id
-        )
-
-        await client.session.close()
-
-        return result
 
     @helper
     async def smart_transfer_zro(self):

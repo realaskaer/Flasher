@@ -101,20 +101,15 @@ async def transfer_zk(account_number, private_key, _, proxy):
     return await worker.transfer_zk()
 
 
-async def smart_claim_zro(account_number, private_key, network, proxy):
-    worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.smart_claim_zro()
-
-
 async def smart_transfer_zro(account_number, private_key, network, proxy):
     worker = Custom(get_client(account_number, private_key, network, proxy))
     return await worker.smart_transfer_zro()
 
 
-async def claim_zro(account_number, private_key, _, proxy, **kwargs):
+async def smart_claim_zro(account_number, private_key, _, proxy):
     network = ArbitrumRPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.full_claim_zro(**kwargs)
+    return await worker.full_claim_zro()
 
 
 async def cex_deposit_util(current_client, dapp_id: int, deposit_data: tuple):
@@ -126,7 +121,7 @@ async def cex_deposit_util(current_client, dapp_id: int, deposit_data: tuple):
 
 
 async def okx_withdraw_util(current_client, **kwargs):
-    worker = OKX(current_client)
+    worker = Bitget(current_client)
     return await worker.withdraw(**kwargs)
 
 
@@ -145,26 +140,7 @@ async def transfer_zro(account_number, private_key, network, proxy):
     return await worker.transfer_zro()
 
 
-async def buy_node(account_number, private_key, _, proxy):
-    network = ArbitrumRPC
-    worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.buy_node()
-
-
-async def approve_weth_for_buy_node(account_number, private_key, _, proxy):
-    network = ArbitrumRPC
-    worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.buy_node(approve_mode=True)
-
-
 async def claim_and_transfer_imx(account_number, private_key, _, proxy):
     network = IMX_RPC
     worker = Custom(get_client(account_number, private_key, network, proxy))
     return await worker.claim_and_transfer_imx()
-
-
-async def stress_test(account_number, private_key, network, proxy):
-
-    worker = Custom(get_client(account_number, private_key, network, proxy))
-    return await worker.stress_test()
-

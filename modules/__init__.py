@@ -1,5 +1,5 @@
 from .interfaces import DEX, Aggregator, Bridge, Blockchain, CEX, Logger
-from .okx import OKX
+from .bitget import Bitget
 from .client import Client
 from .swaps import JediSwap
 from .swaps import Rango

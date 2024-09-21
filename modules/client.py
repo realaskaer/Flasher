@@ -314,7 +314,6 @@ class Client(Logger):
         if without_error and token_name not in TOKENS_PER_CHAIN[self.network.name].keys():
             return 0, 0, ''
 
-        await asyncio.sleep(3)
         if not check_native:
             if token_name != self.network.token:
                 if token_address:
@@ -520,7 +519,7 @@ class Client(Logger):
         if token_name in stables:
             return 1.0
 
-        await asyncio.sleep(10)  # todo поправить на 20с
+        await asyncio.sleep(5)  # todo поправить на 20с
         url = 'https://api.coingecko.com/api/v3/simple/price'
 
         params = {
