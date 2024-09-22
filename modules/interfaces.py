@@ -6,7 +6,7 @@ from sys import stderr
 from datetime import datetime
 from abc import ABC, abstractmethod
 from random import uniform
-from settings import LAYERSWAP_API_KEY, BITGET_API_KEY, BITGET_API_SECRET, BITGET_API_PASSPHRAS
+from settings import LAYERSWAP_API_KEY, BINANCE_API_KEY, BINANCE_API_SECRET
 
 
 class PriceImpactException(Exception):
@@ -95,10 +95,9 @@ class CEX(ABC):
     def __init__(self, client):
         self.client = client
 
-        self.class_name = 'Bitget'
-        self.api_key = BITGET_API_KEY
-        self.api_secret = BITGET_API_SECRET
-        self.passphras = BITGET_API_PASSPHRAS
+        self.class_name = 'Binance'
+        self.api_key = BINANCE_API_KEY
+        self.api_secret = BINANCE_API_SECRET
 
     async def make_request(self, method: str = 'GET', url: str = None, data: str = None, params: dict = None,
                            headers: dict = None, json: dict = None, module_name: str = 'Request',

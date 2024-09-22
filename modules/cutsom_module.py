@@ -694,9 +694,10 @@ class Custom(Logger, Aggregator):
                 from functions import okx_withdraw_util
 
                 min_withdraw_amount = {
-                    2: 0.01,
-                    6: 0.0001,
-                    8: 0.01
+                    2: 0.0008,
+                    3: 0.002,
+                    6: 0.001,
+                    8: 0.0009
                 }.get(withdraw_network, 0.0001)
 
                 _, wallet_balance, _ = await self.client.get_token_balance()

@@ -201,7 +201,7 @@ BRIDGE_SWITCH_CONTROL = {
     MAIN_PROXY              | Прокси для обращения к API бирж. Формат - log:pass@ip:port. По умолчанию - localhost
 """
 SOFTWARE_MODE = 0               # 0 - последовательный запуск / 1 - параллельный запуск
-ACCOUNTS_IN_STREAM = 5          # Только для SOFTWARE_MODE = 1 (параллельный запуск)
+ACCOUNTS_IN_STREAM = 10          # Только для SOFTWARE_MODE = 1 (параллельный запуск)
 WALLETS_TO_WORK = 0             # 0 / 3 / 3, 20 / [3, 20]
 SAVE_PROGRESS = True            # Включает сохранение прогресса аккаунта для Classic-routes
 
@@ -237,9 +237,8 @@ UNLIMITED_APPROVE = True       # True или False Включает безлим
 
 '------------------------------------------------SECURE DATA-----------------------------------------------------------'
 # BITGET API KEYS https://www.okx.com/ru/account/my-api
-BITGET_API_KEY = ""
-BITGET_API_SECRET = ""
-BITGET_API_PASSPHRAS = ""
+BINANCE_API_KEY = ""
+BINANCE_API_SECRET = ""
 
 # EXCEL AND GOOGLE INFO
 EXCEL_PASSWORD = False

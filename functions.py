@@ -121,7 +121,7 @@ async def cex_deposit_util(current_client, dapp_id: int, deposit_data: tuple):
 
 
 async def okx_withdraw_util(current_client, **kwargs):
-    worker = Bitget(current_client)
+    worker = Binance(current_client)
     return await worker.withdraw(**kwargs)
 
 
