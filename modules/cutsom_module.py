@@ -683,7 +683,7 @@ class Custom(Logger, Aggregator):
             else:
                 new_client: Client = await self.client.new_client(1)
                 withdraw_network = 2
-                donate_amount = (await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[-1]
+                donate_amount = int((await quoter_addresses.functions.requiredDonation(amount_to_claim).call())[-1] * 1.2)
                 value = donate_amount
 
             balance_in_wei, _, _ = await new_client.get_token_balance()
